@@ -1,0 +1,3525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LE641F413F"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LE641F413F');
+</script>
+<title>运动品类选品小站</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="config.js"></script>
+<style>
+:root {
+  --bg: #fbfbfd;
+  --card-bg: #ffffff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #86868b;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-light: rgba(0,113,227,0.06);
+  --border: #d2d2d7;
+  --border-light: #e8e8ed;
+  --surface: #f5f5f7;
+  --danger: #ff3b30;
+  --success: #30d158;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+  --transition: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --sidebar-width: 180px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; line-height: 1.5; font-size: 14px; }
+
+/* ===== Login Page ===== */
+.login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+.login-card { background: var(--card-bg); border-radius: var(--radius-xl); padding: 48px 40px; width: 100%; max-width: 380px; box-shadow: var(--shadow-lg); text-align: center; }
+.login-logo { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 6px; color: var(--text-primary); }
+.login-subtitle { font-size: 13px; color: var(--text-tertiary); margin-bottom: 32px; }
+.login-form { text-align: left; }
+.login-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+.login-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 14px; transition: var(--transition); background: var(--bg); color: var(--text-primary); margin-bottom: 16px; }
+.login-input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(0,113,227,0.08); }
+.login-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 980px; font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition); margin-top: 8px; }
+.login-btn:hover { background: var(--accent-hover); }
+.login-error { color: var(--danger); font-size: 12px; text-align: center; margin-top: 12px; display: none; }
+
+/* ===== Navigation ===== */
+.app-wrap { display: none; }
+.nav { background: rgba(251,251,253,0.72); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid rgba(0,0,0,0.09); padding: 0 max(22px, env(safe-area-inset-left)); height: 48px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.nav-left { display: flex; align-items: center; gap: 20px; min-width: 0; flex: 1; }
+.nav-logo { font-size: 16px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.03em; flex-shrink: 0; }
+/* 顶部欢迎语（居中显示；篇幅不够时横向滚动） */
+.nav-welcome { display: flex; align-items: baseline; justify-content: center; gap: 10px; min-width: 0; flex: 1; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; padding: 2px 8px; text-align: center; }
+.nav-welcome > :first-child { margin-left: auto; }
+.nav-welcome > :last-child { margin-right: auto; }
+.nav-welcome::-webkit-scrollbar { display: none; }
+.nav-welcome-main { font-size: 13px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; flex-shrink: 0; }
+.nav-welcome-sub { font-size: 12px; color: var(--text-tertiary); font-weight: 400; flex-shrink: 0; }
+.nav-welcome-sub::before { content: '·'; margin-right: 8px; color: var(--border-light); }
+.nav-tabs { display: flex; gap: 1px; background: var(--surface); border-radius: 8px; padding: 3px; flex-shrink: 0; }
+.nav-tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text-secondary); transition: var(--transition); font-weight: 500; }
+.nav-tab.active { background: var(--card-bg); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.nav-tab:hover:not(.active) { color: var(--text-primary); }
+.nav-tab-link { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+.nav-tab-link::after { content: '↗'; font-size: 11px; opacity: 0.6; }
+/* ===== 专题导航条(Banner 位) ===== */
+.topic-nav { display: flex; align-items: center; gap: 10px; padding: 6px 20px; background: var(--card-bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.topic-nav-label { font-size: 12px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 0.04em; flex-shrink: 0; }
+.topic-nav-items { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.topic-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 14px; border-radius: 980px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); transition: var(--transition); white-space: nowrap; }
+.topic-chip .tc-fire { font-size: 12px; line-height: 1; }
+/* 强展示资源位:去掉橙色底,外观与普通 chip 一致,仅文字前保留火花表情 */
+.topic-chip.strong { color: var(--text-secondary); border-color: var(--border); background: var(--surface); box-shadow: none; }
+.topic-chip.strong .tc-fire { animation: nttPulse 1.6s ease-in-out infinite; }
+.topic-chip.strong:hover { color: var(--text-primary); border-color: var(--text-tertiary); filter: none; }
+.topic-chip.strong.active { color: var(--text-primary); border-color: var(--brand, #ff5a4d); background: var(--card-bg); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.topic-chip:hover:not(.reserved) { color: var(--text-primary); border-color: var(--text-tertiary); }
+.topic-chip.active { color: var(--text-primary); border-color: var(--brand, #ff5a4d); background: var(--card-bg); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+/* 预留位:占位、不可点、灰显 */
+.topic-chip.reserved { cursor: default; opacity: 0.55; color: var(--text-tertiary); border-style: dashed; background: transparent; }
+@keyframes nttPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+/* 专题页返回条 */
+.topic-banner { display: none; align-items: center; gap: 12px; padding: 10px 16px; margin: 0 0 4px; background: linear-gradient(135deg, rgba(255,90,77,0.10), rgba(255,138,61,0.10)); border: 1px solid rgba(255,90,77,0.30); border-radius: 10px; }
+.topic-banner.show { display: flex; }
+.topic-banner .tb-fire { font-size: 18px; }
+.topic-banner .tb-title { font-size: 15px; font-weight: 800; color: #d63426; }
+.topic-banner .tb-sub { font-size: 12px; color: var(--text-secondary); }
+.topic-banner .tb-back { margin-left: auto; padding: 7px 16px; border-radius: 980px; border: 1px solid var(--border-light); background: #fff; color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); white-space: nowrap; }
+.topic-banner .tb-back:hover { border-color: #ff5a4d; color: #d63426; }
+/* 专题页悬浮返回主池按钮:醒目、固定于底部居中 */
+.float-back-pool { display: none; position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2500; padding: 13px 26px; border: none; border-radius: 980px; background: linear-gradient(135deg, #ff5a4d, #ff8a3d); color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0.02em; cursor: pointer; box-shadow: 0 8px 24px rgba(255,90,77,0.45); transition: var(--transition); }
+.float-back-pool:hover { filter: brightness(1.06); box-shadow: 0 10px 30px rgba(255,90,77,0.55); transform: translateX(-50%) translateY(-2px); }
+.float-back-pool.show { display: inline-flex; align-items: center; gap: 6px; }
+.nav-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.agency-badge { color: var(--text-secondary); font-size: 12px; font-weight: 500; }
+.nav-logout { font-size: 11px; color: var(--text-tertiary); cursor: pointer; padding: 4px 10px; border-radius: 980px; border: 1px solid var(--border-light); transition: var(--transition); }
+.nav-logout:hover { color: var(--danger); border-color: var(--danger); }
+.cart-badge { position: relative; cursor: pointer; padding: 6px 12px; background: var(--accent); color: #fff; border-radius: 980px; font-size: 12px; font-weight: 500; transition: var(--transition); }
+.cart-badge:hover { background: var(--accent-hover); transform: scale(1.02); }
+.cart-count { position: absolute; top: -4px; right: -4px; background: var(--danger); color: #fff; font-size: 9px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+
+/* ===== Welcome Banner (已迁移到顶部导航栏 .nav-welcome) ===== */
+
+/* ===== Layout ===== */
+.layout-wrap { display: flex; max-width: 1360px; margin: 0 auto; padding: 20px 22px 120px; gap: 20px; }
+.sidebar { width: var(--sidebar-width); flex-shrink: 0; position: sticky; top: 68px; align-self: flex-start; }
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); padding: 0 10px 8px; }
+.sidebar-item { padding: 9px 10px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.sidebar-item:hover { background: var(--surface); color: var(--text-primary); }
+.sidebar-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+.sidebar-item .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sidebar-item .dot.green { background: var(--success); }
+.sidebar-item .dot.orange { background: #ff9500; }
+.sidebar-item .dot.blue { background: var(--accent); }
+.sidebar-item .dot.purple { background: #af52de; }
+.sidebar-item .dot.pink { background: #ff2d55; }
+.sidebar-item.disabled { opacity: 0.4; cursor: default; }
+.main-content { flex: 1; min-width: 0; }
+
+/* ===== Filter Bar ===== */
+.filter-bar { background: var(--card-bg); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 16px; border: 0.5px solid rgba(0,0,0,0.06); box-shadow: var(--shadow-sm); }
+.filter-basic { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filter-input { padding: 7px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 13px; background: var(--bg); color: var(--text-primary); transition: var(--transition); }
+.filter-input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(0,113,227,0.08); }
+.filter-input::placeholder { color: var(--text-tertiary); }
+.filter-input.search-main { width: 200px; }
+.filter-select { padding: 7px 10px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 13px; background: var(--bg); color: var(--text-primary); cursor: pointer; -webkit-appearance: none; appearance: none; padding-right: 26px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2386868b'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+.filter-select:focus { outline: none; border-color: var(--accent); }
+.filter-range { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg); }
+.filter-range .fr-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+.filter-range .fr-sep { font-size: 12px; color: var(--text-tertiary); }
+.filter-range .filter-input { border: none; padding: 3px 4px; background: transparent; font-size: 12px; }
+.filter-range .filter-input:focus { box-shadow: none; background: transparent; }
+.filter-range .fr-num { width: 54px; }
+.filter-range .fr-date { width: 130px; }
+/* ===== 多选筛选器(国家/买手/二级类目/三级类目) ===== */
+.ms-wrap { position: relative; display: inline-block; }
+.ms-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 7px 30px 7px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 13px; background: var(--bg); color: var(--text-primary); cursor: pointer; position: relative; white-space: nowrap; transition: var(--transition); max-width: 220px; }
+.ms-trigger::after { content: ''; position: absolute; right: 10px; top: 50%; width: 10px; height: 6px; transform: translateY(-50%); background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2386868b'/%3E%3C/svg%3E") no-repeat center; }
+.ms-trigger .ms-label { overflow: hidden; text-overflow: ellipsis; }
+.ms-trigger .ms-count { flex-shrink: 0; min-width: 18px; height: 18px; padding: 0 6px; border-radius: 980px; background: #ff5a4d; color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+/* 强提醒:有选中时整个触发按钮换成高对比橙红态 */
+.ms-wrap.has-sel .ms-trigger { border-color: #ff5a4d; background: linear-gradient(135deg, rgba(255,90,77,0.10), rgba(255,138,61,0.10)); color: #d63426; font-weight: 700; box-shadow: 0 0 0 3px rgba(255,90,77,0.12); }
+.ms-wrap.has-sel .ms-trigger::after { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23d63426'/%3E%3C/svg%3E") no-repeat center; }
+.ms-panel { display: none; position: fixed; z-index: 3000; min-width: 200px; max-width: 300px; max-height: 60vh; overflow-y: auto; background: #fff; border: 1px solid var(--border-light); border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.16); padding: 6px; }
+.ms-panel.open { display: block; }
+.ms-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 6px; border-bottom: 1px solid var(--border-light); margin-bottom: 4px; }
+.ms-panel-head .ms-h-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+.ms-panel-head .ms-clear { font-size: 12px; color: #ff5a4d; cursor: pointer; font-weight: 600; background: none; border: none; padding: 2px 4px; }
+.ms-opt { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-primary); transition: background 0.12s; user-select: none; }
+.ms-opt:hover { background: var(--surface); }
+.ms-opt .ms-box { flex-shrink: 0; width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--border-light); display: inline-flex; align-items: center; justify-content: center; background: #fff; transition: all 0.12s; }
+.ms-opt .ms-box svg { width: 11px; height: 11px; opacity: 0; }
+/* 强提醒:选中项打勾变色 + 整行换底色 */
+.ms-opt.sel { background: linear-gradient(135deg, rgba(255,90,77,0.12), rgba(255,138,61,0.12)); color: #d63426; font-weight: 700; }
+.ms-opt.sel .ms-box { background: #ff5a4d; border-color: #ff5a4d; }
+.ms-opt.sel .ms-box svg { opacity: 1; }
+.ms-opt .ms-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-btn { padding: 7px 16px; border-radius: 980px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: var(--transition); }
+.filter-btn.primary { background: var(--accent); color: #fff; }
+.filter-btn.primary:hover { background: var(--accent-hover); }
+.filter-btn.ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-light); }
+.filter-btn.ghost:hover { background: var(--surface); color: var(--text-primary); }
+.filter-guide-btn { padding: 7px 14px; border-radius: 980px; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-light); transition: var(--transition); white-space: nowrap; }
+.filter-guide-btn:hover { background: var(--surface); color: var(--text-primary); border-color: var(--accent); }
+.filter-expand-btn { background: none; border: none; font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500; padding: 6px 0; display: flex; align-items: center; gap: 4px; transition: var(--transition); }
+.filter-expand-btn:hover { opacity: 0.75; }
+.filter-expand-btn .arrow { display: inline-block; transition: transform 0.2s; font-size: 10px; }
+.filter-expand-btn.expanded .arrow { transform: rotate(180deg); }
+.filter-advanced { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-light); }
+.filter-group { display: flex; align-items: center; gap: 4px; }
+.filter-label { font-size: 11px; color: var(--text-tertiary); font-weight: 500; white-space: nowrap; }
+.filter-input.narrow { width: 70px; }
+.filter-sep { color: var(--text-tertiary); font-size: 11px; }
+.filter-stats { font-size: 11px; color: var(--text-tertiary); margin-top: 10px; }
+/* 渠道占比图例(搜索栏旁) */
+.channel-legend { display: flex; align-items: center; gap: 12px; margin-left: auto; padding-left: 8px; }
+.cl-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+.cl-swatch { width: 14px; height: 8px; border-radius: 3px; display: inline-block; }
+.cl-swatch.cl-video { background: #ff3b30; }
+.cl-swatch.cl-live { background: #34c759; }
+.cl-swatch.cl-shelf { background: #007aff; }
+/* 隐藏/显示搜索筛选栏 */
+.filterbar-toggle { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 12px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--card-bg); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 980px; box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition); }
+.filterbar-toggle:hover { color: var(--text-primary); background: var(--surface); }
+.filterbar-toggle .fbt-arrow { font-size: 10px; transition: transform 0.35s cubic-bezier(0.22,0.61,0.36,1); }
+.frozen-head.filterbar-hidden .filterbar-toggle .fbt-arrow { transform: rotate(180deg); }
+.filter-show-row { display: none; align-items: center; gap: 16px; margin: 0 0 12px; }
+.filter-show-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--card-bg); border: 0.5px solid rgba(0,0,0,0.08); border-radius: 980px; box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition); }
+.filter-show-btn:hover { background: var(--surface); }
+.filter-show-btn .fbt-arrow { font-size: 10px; }
+.filter-show-row .channel-legend { margin-left: 0; padding-left: 0; }
+/* 搜索栏折叠:用 max-height→0 + 透明度做平滑过渡,彻底移除占位高度(grid 0fr 在部分浏览器会残留空白) */
+#filterBar { max-height: 1200px; opacity: 1; overflow: hidden; transform: translateY(0); transition: max-height 0.4s cubic-bezier(0.22,0.61,0.36,1), opacity 0.32s ease, transform 0.4s cubic-bezier(0.22,0.61,0.36,1), margin-bottom 0.4s cubic-bezier(0.22,0.61,0.36,1), padding 0.4s cubic-bezier(0.22,0.61,0.36,1), border-width 0.4s ease; }
+.frozen-head.filterbar-hidden #filterBar { max-height: 0; height: 0; opacity: 0; transform: translateY(-8px); margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; border-width: 0; pointer-events: none; visibility: hidden; }
+.frozen-head.filterbar-hidden .filterbar-toggle { display: none; }
+.filter-show-row { transition: opacity 0.3s ease; }
+.frozen-head.filterbar-hidden + .filter-show-row { display: inline-flex; }
+
+/* ===== Product Grid ===== */
+.product-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; align-items: stretch; grid-auto-rows: 1fr; }
+@media (max-width: 1700px) { .product-grid { grid-template-columns: repeat(7, 1fr); } }
+@media (max-width: 1500px) { .product-grid { grid-template-columns: repeat(6, 1fr); } }
+@media (max-width: 1280px) { .product-grid { grid-template-columns: repeat(5, 1fr); } }
+@media (max-width: 1050px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 820px)  { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px)  { .product-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== Frozen layout: header fixed, detail area scrolls ===== */
+.products-page { display: flex; flex-direction: column; height: calc(100vh - 48px); }
+.products-page .layout-wrap { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: none; margin: 0; padding: 14px 26px 0; gap: 0; width: 100%; }
+.products-page .main-content { display: flex; flex-direction: column; flex: 1; min-height: 0; width: 100%; }
+.frozen-head { flex-shrink: 0; }
+.scroll-area { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 2px 12px; }
+.scroll-area::-webkit-scrollbar { width: 8px; }
+.scroll-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.16); border-radius: 8px; }
+
+/* ===== Pagination bar ===== */
+.pagination { flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 8px 16px; border-top: 0.5px solid rgba(0,0,0,0.08); background: var(--bg); flex-wrap: wrap; }
+.pg-btn { min-width: 32px; height: 32px; padding: 0 10px; border: 1px solid var(--border-light); background: var(--card-bg); color: var(--text-primary); border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; transition: var(--transition); }
+.pg-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.pg-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pg-ellipsis { color: var(--text-tertiary); padding: 0 2px; }
+.pg-jump { display: flex; align-items: center; gap: 5px; margin-left: 8px; font-size: 12px; color: var(--text-tertiary); }
+.pg-jump input { width: 48px; height: 32px; text-align: center; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 13px; }
+.pg-jump input:focus { outline: none; border-color: var(--accent); }
+.pg-total { font-size: 12px; color: var(--text-tertiary); margin-right: 6px; }
+.product-card { background: var(--card-bg); border-radius: var(--radius-lg); overflow: hidden; transition: var(--transition); cursor: pointer; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; height: 100%; }
+.product-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); border-color: rgba(0,113,227,0.15); }
+.product-img-wrap { position: relative; overflow: hidden; }
+.pc-new-badge { position: absolute; top: 10px; right: 10px; z-index: 3; display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.96); background: rgba(20,20,22,0.42); -webkit-backdrop-filter: blur(10px) saturate(160%); backdrop-filter: blur(10px) saturate(160%); border: 0.5px solid rgba(255,255,255,0.28); box-shadow: 0 1px 4px rgba(0,0,0,0.14); pointer-events: none; }
+.pc-new-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #34c759; box-shadow: 0 0 5px rgba(52,199,89,0.9); }
+.product-img { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: #f5f5f7; transition: transform 0.4s ease; }
+.product-img.img-fallback { background: linear-gradient(135deg,#f5f5f7,#e8e8ed); }
+.img-fallback-tip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #b0b0b8; pointer-events: none; }
+.product-card:hover .product-img { transform: scale(1.04); }
+.product-img-btn { position: absolute; bottom: 6px; right: 6px; padding: 4px 8px; background: rgba(0,0,0,0.55); color: #fff; border-radius: 980px; font-size: 10px; cursor: pointer; opacity: 0; transition: var(--transition); backdrop-filter: blur(4px); border: none; font-weight: 500; }
+.product-card:hover .product-img-btn { opacity: 1; }
+.product-img-btn:hover { background: rgba(0,0,0,0.75); }
+.product-info { padding: 11px 13px 12px; display: flex; flex-direction: column; flex: 1 1 auto; }
+.product-spu { font-size: 11px; color: var(--text-secondary); font-family: 'SF Mono', 'Menlo', monospace; letter-spacing: -0.01em; margin-bottom: 2px; }
+.product-pid-line { font-size: 12px; color: var(--text-primary); font-family: 'SF Mono', 'Menlo', monospace; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 8px; }
+.product-buyer { font-size: 11px; color: var(--accent); font-weight: 500; margin-bottom: 6px; }
+.product-price { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 8px; }
+.product-specs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.product-spec-tag { font-size: 10px; padding: 3px 7px; background: var(--surface); color: var(--text-secondary); border-radius: 4px; font-weight: 500; }
+.product-tags-area { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; }
+.product-label { font-size: 10px; padding: 3px 7px; border-radius: 4px; font-weight: 600; }
+.product-label.hot { background: #fff0f0; color: #ff3b30; }
+.product-label.new { background: #f0f8ff; color: #007aff; }
+.product-label.trending { background: #f0faf0; color: #30d158; }
+.product-label.recommend { background: #fef8f0; color: #ff9500; }
+/* new-product tag on image — premium glass/gradient */
+.product-img-tag { position: absolute; top: 9px; left: 9px; padding: 4px 12px; border-radius: 9px; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: #fff; z-index: 2; border: 1px solid rgba(255,255,255,0.55); box-shadow: 0 4px 14px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35); text-shadow: 0 1px 2px rgba(0,0,0,0.28); backdrop-filter: blur(2px); }
+.product-img-tag.t7 { background: linear-gradient(135deg,#0a84ff,#0060df); }
+.product-img-tag.t14 { background: linear-gradient(135deg,#409cff,#0a7bff); }
+.product-img-tag.t45 { background: linear-gradient(135deg,#5eb0f5,#3b93e8); }
+.product-img-tag.told { background: linear-gradient(135deg,rgba(60,60,67,0.72),rgba(28,28,30,0.62)); }
+/* A列(新老品标签)通用调色板:统一蓝色系,不同深浅稳定区分 */
+.product-img-tag.tp0 { background: linear-gradient(135deg,#0a84ff,#0060df); }
+.product-img-tag.tp1 { background: linear-gradient(135deg,#409cff,#0a7bff); }
+.product-img-tag.tp2 { background: linear-gradient(135deg,#5eb0f5,#3b93e8); }
+.product-img-tag.tp3 { background: linear-gradient(135deg,#4a9bff,#0071e3); }
+.product-img-tag.tp4 { background: linear-gradient(135deg,#2f7fd6,#1466b8); }
+.product-img-tag.tp5 { background: linear-gradient(135deg,#6cb2f0,#3f92e0); }
+.product-img-tag.tp6 { background: linear-gradient(135deg,#0a6bd6,#004fa8); }
+.product-img-tag.tp7 { background: linear-gradient(135deg,#7ec2f5,#4a9bd8); }
+.product-img-country { position: absolute; top: 6px; right: 6px; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; background: rgba(0,0,0,0.55); color: #fff; z-index: 2; backdrop-filter: blur(4px); }
+/* Card fields — matches screenshot layout */
+.pc-pid { font-size: 13px; font-weight: 700; color: var(--text-primary); font-family: 'SF Pro Rounded','Varela Round','Quicksand',ui-rounded,-apple-system,'PingFang SC',sans-serif; letter-spacing: 0.01em; margin-bottom: 6px; word-break: break-all; line-height: 1.2; }
+.pc-shop-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.pc-shop { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-rating { font-size: 12px; font-weight: 600; color: #ff9500; white-space: nowrap; flex-shrink: 0; }
+.pc-market { font-size: 11px; font-weight: 700; color: #0071e3; background: rgba(0,113,227,0.10); padding: 2px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+.pc-cat { font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 属性标签流:国家/重点商家/季节/类目 合并到同一可换行区域,尽量填满、减少空白 */
+.pc-attrrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; min-height: 0; }
+.pc-attrrow:empty { display: none; }
+.pc-chip { display: inline-flex; align-items: center; max-width: 100%; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; white-space: nowrap; overflow: hidden; }
+.pc-chip .pc-chip-txt { overflow: hidden; text-overflow: ellipsis; }
+.pc-cattag { flex: 1 1 auto; min-width: 0; justify-content: flex-start; color: #2b6a94; background: rgba(90,163,208,0.10); border: 1px solid rgba(90,163,208,0.22); }
+/* 店铺标签:位于价格行、右对齐、无前缀、过长截断 */
+.pc-shopchip { flex: 1 1 auto; min-width: 0; display: inline-flex; justify-content: flex-end; overflow: hidden; }
+.pc-shopchip span { max-width: 100%; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; color: #0a4d8c; background: rgba(0,113,227,0.06); border: 1px solid rgba(0,113,227,0.16); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+.pc-hist { font-size: 11px; font-weight: 500; color: var(--text-secondary); background: var(--surface); padding: 2px 9px; border-radius: 980px; white-space: nowrap; }
+.pc-price-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 9px; }
+.pc-price-row .pc-shopchip { align-self: center; }
+.product-price { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+.pc-stock { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.pc-colorsize { display: flex; gap: 6px; margin-bottom: 11px; }
+.pc-cs { font-size: 11px; font-weight: 500; color: var(--text-secondary); background: var(--surface); padding: 2px 9px; border-radius: 980px; }
+.pc-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; min-height: 20px; }
+.pc-rank { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.pc-wow { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; white-space: nowrap; }
+.pc-wow.up { color: #0a7c2f; background: rgba(10,124,47,0.10); }
+.pc-wow.down { color: #d0021b; background: rgba(208,2,27,0.10); }
+.pc-wow.flat { color: var(--text-secondary); background: var(--surface); }
+.pc-gpm { font-size: 12px; font-weight: 700; color: #ff2d55; }
+.pc-aff { font-size: 11px; font-weight: 500; color: var(--text-secondary); background: var(--surface); padding: 2px 8px; border-radius: 5px; }
+.pc-season { font-size: 11px; font-weight: 600; color: #0071e3; background: rgba(0,113,227,0.10); padding: 2px 9px; border-radius: 980px; white-space: nowrap; }
+/* Final card face (v7) */
+.pc-topline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 7px; min-height: 20px; }
+.pc-country { font-size: 11px; font-weight: 700; color: #4a6478; background: rgba(60,90,120,0.07); border: 1px solid rgba(60,90,120,0.14); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.pc-keymerchant { font-size: 11px; font-weight: 700; color: #0a4d8c; background: rgba(0,113,227,0.10); border: 1px solid rgba(0,113,227,0.24); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.pc-wow-up { font-size: 11px; font-weight: 800; color: #005bbf; background: rgba(0,113,227,0.10); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.pc-spu { font-size: 13px; font-weight: 700; color: var(--text-primary); font-family: 'SF Pro Rounded','Varela Round','Quicksand',ui-rounded,-apple-system,'PingFang SC',sans-serif; letter-spacing: 0.01em; margin-bottom: 5px; word-break: break-all; }
+/* SHEIN 式聚合信息块:SPU行/PID大标题/店铺行/子信息行/价格行,底部对齐 */
+.pc-infoblock { padding-bottom: 10px; border-bottom: 1px solid var(--border-light); margin-bottom: 10px; }
+.pc-spu-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+.pc-spu-row .pc-spu { margin-bottom: 0; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-break: normal; }
+.pc-spu-tag { flex-shrink: 0; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: #fff; padding: 3px 10px; border-radius: 8px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+.pc-spu-tag.t7 { background: linear-gradient(135deg,#0a84ff,#0060df); }
+.pc-spu-tag.t14 { background: linear-gradient(135deg,#409cff,#0a7bff); }
+.pc-spu-tag.t45 { background: linear-gradient(135deg,#5eb0f5,#3b93e8); }
+.pc-spu-tag.told { background: linear-gradient(135deg,rgba(60,60,67,0.72),rgba(28,28,30,0.62)); }
+.pc-spu-tag.tp0 { background: linear-gradient(135deg,#0a84ff,#0060df); }
+.pc-spu-tag.tp1 { background: linear-gradient(135deg,#409cff,#0a7bff); }
+.pc-spu-tag.tp2 { background: linear-gradient(135deg,#5eb0f5,#3b93e8); }
+.pc-spu-tag.tp3 { background: linear-gradient(135deg,#4a9bff,#0071e3); }
+.pc-spu-tag.tp4 { background: linear-gradient(135deg,#2f7fd6,#1466b8); }
+.pc-spu-tag.tp5 { background: linear-gradient(135deg,#6cb2f0,#3f92e0); }
+.pc-spu-tag.tp6 { background: linear-gradient(135deg,#0a6bd6,#004fa8); }
+.pc-spu-tag.tp7 { background: linear-gradient(135deg,#7ec2f5,#4a9bd8); }
+.pc-store-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.pc-store-name { flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-store-score { flex-shrink: 0; font-size: 11px; font-weight: 700; color: #ff9500; background: rgba(255,149,0,0.10); border: 1px solid rgba(255,149,0,0.24); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.pc-store-score b { font-weight: 800; }
+.pc-subinfo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; min-height: 16px; }
+.pc-subinfo { flex: 1 1 auto; min-width: 0; font-size: 12px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-subinfo-row .pc-keymerchant { margin-left: auto; flex-shrink: 0; }
+/* 国家醒目标签:高对比配色 + 国旗,一眼定位站点 */
+.pc-country-tag { flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 800; letter-spacing: 0.02em; color: #fff; background: linear-gradient(135deg, #ff5a4d, #ff8a3d); padding: 2px 9px; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 6px rgba(255,90,77,0.28); }
+.pc-priceline { display: flex; align-items: baseline; gap: 10px; }
+.pc-priceline .product-price { font-size: 14px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; margin-bottom: 0; }
+.pc-priceline .pc-stock { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+.pc-priceline .pc-price-season { margin-left: auto; flex-shrink: 0; font-size: 11px; font-weight: 600; color: #0071e3; background: rgba(0,113,227,0.09); border: 1px solid rgba(0,113,227,0.20); padding: 2px 9px; border-radius: 980px; white-space: nowrap; align-self: center; }
+.pc-dots-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; min-height: 15px; }
+.pc-dots-row:empty { display: none; }
+.pc-upload-inline { flex-shrink: 0; }
+.pc-dots { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px; min-height: 14px; flex: 1 1 auto; }
+.pc-dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
+.pc-dot-more { font-size: 10px; font-weight: 700; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border-light); border-radius: 980px; padding: 0 6px; height: 15px; line-height: 15px; display: inline-flex; align-items: center; }
+/* 顶部胶囊标签(季节/上架日期) */
+.pc-capsules { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 7px; min-height: 0; }
+.pc-capsules:empty { display: none; }
+.pc-cap { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 980px; white-space: nowrap; }
+.pc-cap-season { color: #0071e3; background: rgba(0,113,227,0.09); }
+.pc-chip.pc-cap-season { border: 1px solid rgba(0,113,227,0.20); }
+.pc-cap-list { color: #4a6478; background: rgba(60,90,120,0.08); }
+/* 销量/库存/SPS 脱敏标签行 */
+.pc-sales { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+.pc-sales:empty { display: none; }
+/* 2×2 网格:历史/近7日/昨日销量 + 近3日增速,四格四色、互不重叠 */
+.pc-sales-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: stretch; }
+.pc-sale-cell { display: flex; min-width: 0; }
+.pc-sale-cell > .pc-sale { flex: 1 1 auto; min-width: 0; box-sizing: border-box; justify-content: center; overflow: hidden; }
+.pc-sale { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; white-space: nowrap; color: var(--text-primary); background: var(--surface); border: 1px solid var(--border-light); overflow: hidden; text-overflow: ellipsis; }
+.pc-sale i { font-style: normal; font-weight: 600; font-size: 10px; opacity: 0.85; flex-shrink: 0; }
+/* 四色区分:历史=蓝 / 近7日=绿 / 昨日=橙 / 增速=紫红 */
+.pc-sale-hist { background: rgba(0,113,227,0.10); border-color: rgba(0,113,227,0.24); color: #0060df; }
+.pc-sale-hist i { color: #0060df; }
+.pc-sale-7 { background: rgba(10,124,47,0.10); border-color: rgba(10,124,47,0.24); color: #0a7c2f; }
+.pc-sale-7 i { color: #0a7c2f; }
+.pc-sale-t1 { background: rgba(255,149,0,0.12); border-color: rgba(255,149,0,0.28); color: #b56a00; }
+.pc-sale-t1 i { color: #b56a00; }
+.pc-sale-stock { background: rgba(90,163,208,0.10); border-color: rgba(90,163,208,0.24); color: #2b6a94; }
+.pc-sale-stock i { color: #4a90c2; }
+.pc-sale-sps { background: rgba(0,113,227,0.12); border-color: rgba(0,113,227,0.28); color: #004a99; }
+.pc-sale-sps i { color: #0060cc; }
+.pc-sale-wow { background: rgba(255,45,85,0.10); border-color: rgba(255,45,85,0.26); color: #c31d3f; font-weight: 800; }
+.pc-sale-wow i { color: #c31d3f; }
+.pc-wow-label { font-size: 10px; font-weight: 700; opacity: 0.85; }
+.pc-channel { display: flex; flex-wrap: nowrap; align-items: stretch; width: 100%; height: 7px; min-height: 7px; flex-shrink: 0; border-radius: 980px; overflow: hidden; margin: 2px 0 12px; background: rgba(0,0,0,0.06); }
+.pc-ch-seg { align-self: stretch; height: 7px; min-height: 7px; display: block; cursor: help; transition: filter 0.15s, transform 0.15s; }
+.pc-ch-seg:hover { filter: brightness(1.08); transform: scaleY(1.5); }
+.pc-ch-seg.ch-video { background: #ff6b60; }
+.pc-ch-seg.ch-live { background: #34c759; }
+.pc-ch-seg.ch-shelf { background: #0a84ff; }
+/* 渠道条自定义浮标 */
+#chTip { position: fixed; z-index: 9999; pointer-events: none; background: rgba(28,28,30,0.94); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,0.28); opacity: 0; transform: translate(-50%, -100%) translateY(4px); transition: opacity 0.12s; }
+#chTip.show { opacity: 1; }
+#chTip::after { content: ''; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(28,28,30,0.94); border-bottom: 0; }
+.pc-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; min-height: 28px; border-top: 1px solid var(--border-light); }
+.pc-date { font-size: 12px; color: var(--text-tertiary); }
+.quick-add-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); flex-shrink: 0; }
+.quick-add-btn:hover { background: var(--accent-hover); transform: scale(1.12); }
+.quick-add-btn:active { transform: scale(0.92); }
+/* Floating copy PID button */
+.float-copy-pid { position: fixed; bottom: 84px; right: 22px; z-index: 95; padding: 12px 18px; border-radius: 980px; background: #1d1d1f; color: #fff; font-size: 13px; font-weight: 600; border: none; cursor: pointer; box-shadow: var(--shadow-lg); display: none; align-items: center; gap: 6px; transition: var(--transition); }
+.float-copy-pid:hover { transform: scale(1.04); }
+.float-copy-pid.show { display: flex; }
+/* Floating cart on browse page */
+.float-cart { position: fixed; bottom: 22px; right: 22px; z-index: 95; padding: 13px 20px; border-radius: 980px; background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; border: none; cursor: pointer; box-shadow: var(--shadow-lg); display: none; align-items: center; gap: 8px; transition: var(--transition); }
+.float-cart:hover { background: var(--accent-hover); transform: scale(1.04); }
+.float-cart.show { display: flex; }
+.float-cart .fc-count { background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+/* ===== Side floating action buttons (每个按钮独立可拖动) ===== */
+.side-fab { position: fixed; right: 0; z-index: 96; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 60px; padding: 12px 6px; border: none; cursor: grab; color: #fff; font-size: 11px; font-weight: 600; line-height: 1.25; border-radius: 14px 0 0 14px; box-shadow: -2px 3px 12px rgba(0,0,0,0.16); transition: box-shadow 0.2s ease, transform 0.2s ease; text-align: center; text-decoration: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+.side-fab:hover { transform: translateX(-3px); box-shadow: -4px 4px 16px rgba(0,0,0,0.22); }
+.side-fab.dragging { transition: none; opacity: 0.92; cursor: grabbing; transform: none; }
+.side-fab.side-left { border-radius: 0 14px 14px 0; box-shadow: 2px 3px 12px rgba(0,0,0,0.16); }
+.side-fab.side-left:hover { transform: translateX(3px); box-shadow: 4px 4px 16px rgba(0,0,0,0.22); }
+.side-fab.side-left.dragging { transform: none; }
+.side-fab .side-fab-ic { font-size: 18px; }
+.side-fab-handle { position: absolute; top: 3px; left: 0; right: 0; height: 10px; display: flex; align-items: center; justify-content: center; font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.55); pointer-events: none; }
+.side-fab.fab-guide { background: linear-gradient(135deg,#5856d6,#7d5bed); }
+.side-fab.fab-sample { background: linear-gradient(135deg,#0071e3,#00a1ff); }
+
+/* ===== Tag guide modal ===== */
+.guide-modal { background: var(--card-bg); border-radius: var(--radius-lg); max-width: 520px; width: 92%; max-height: 82vh; overflow-y: auto; padding: 26px 28px 22px; box-shadow: var(--shadow-lg); }
+.guide-modal h2 { font-size: 19px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.02em; }
+.guide-modal .guide-sub { font-size: 12px; color: var(--text-tertiary); margin-bottom: 18px; }
+.guide-sec { margin-bottom: 16px; }
+.guide-sec-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.guide-chip { font-size: 11px; font-weight: 700; color: #fff; padding: 2px 10px; border-radius: 980px; }
+.guide-chip.t7 { background: #0060df; }
+.guide-chip.t14 { background: #0a7bff; }
+.guide-chip.thot { background: linear-gradient(135deg,#0a84ff,#0060df); }
+.guide-chip.tpot { background: #3b93e8; }
+.guide-chip.tnew { background: #5eb0f5; }
+.guide-item { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding-left: 2px; }
+.guide-item b { color: var(--text-primary); font-weight: 600; }
+.guide-close { display: block; width: 100%; margin-top: 8px; padding: 11px; background: var(--surface); color: var(--text-primary); border: none; border-radius: 980px; font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+.guide-close:hover { background: var(--border-light); }
+@media (max-width: 640px) { .side-fab { width: 50px; font-size: 10px; padding: 10px 4px; } }
+
+/* ===== SKU Modal ===== */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.sku-modal { background: var(--card-bg); border-radius: var(--radius-xl); width: 92%; max-width: 880px; max-height: 88vh; overflow-y: auto; padding: 0; box-shadow: var(--shadow-lg); animation: modalIn 0.25s ease; position: relative; }
+/* 滚动条:默认与背景相融(透明),鼠标靠近弹窗时才显示滑块 */
+.sku-modal { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.sku-modal::-webkit-scrollbar { width: 8px; }
+.sku-modal::-webkit-scrollbar-track { background: transparent; }
+.sku-modal::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; transition: background 0.25s ease; }
+.sku-modal:hover { scrollbar-color: rgba(140,140,150,0.5) transparent; }
+.sku-modal:hover::-webkit-scrollbar-thumb { background: rgba(140,140,150,0.45); background-clip: padding-box; }
+.sku-modal:hover::-webkit-scrollbar-thumb:hover { background: rgba(120,120,130,0.7); background-clip: padding-box; }
+/* 两栏布局 */
+.sku-layout { display: grid; grid-template-columns: 1fr 1.15fr; gap: 0; }
+.sku-left { position: relative; background: var(--surface); border-radius: var(--radius-xl) 0 0 var(--radius-xl); display: flex; align-items: center; justify-content: center; padding: 24px; min-height: 100%; }
+.sku-big-img { width: 100%; max-height: 520px; object-fit: contain; border-radius: var(--radius-md); cursor: zoom-in; transition: var(--transition); }
+.sku-big-img:hover { opacity: 0.92; }
+.sku-img-tag { position: absolute; top: 18px; left: 18px; background: rgba(0,0,0,0.62); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 980px; font-weight: 500; }
+.sku-right { padding: 28px 28px 24px; }
+.sku-info-grid-wrap { background: var(--surface); border-radius: var(--radius-md); padding: 12px 14px; }
+.sku-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 12px; }
+.sku-info-cell { display: flex; flex-direction: column; }
+.sku-info-label { color: var(--text-tertiary); }
+.sku-info-val { color: var(--text-primary); margin-top: 1px; }
+.sku-url-row { margin-top: 10px; font-size: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+.sku-url-row a { color: var(--accent); word-break: break-all; text-decoration: none; }
+.sku-url-link { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--accent); background: rgba(0,113,227,0.08); padding: 4px 12px; border-radius: 980px; text-decoration: none; transition: var(--transition); }
+.sku-url-link:hover { background: rgba(0,113,227,0.16); }
+.sku-url-link::after { content: '↗'; font-size: 11px; opacity: 0.7; }
+.sku-url-row-inline { display: flex; gap: 12px; }
+.sku-url-row-inline .sku-url-link { flex: 1 1 0; justify-content: center; }
+.sku-count { color: var(--text-tertiary); font-weight: 400; font-size: 10px; text-transform: none; letter-spacing: 0; margin-left: 4px; }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-close-btn { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-secondary); transition: var(--transition); z-index: 10; }
+.modal-close-btn:hover { background: var(--border-light); color: var(--text-primary); }
+.sku-header { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 0.5px solid var(--border-light); }
+.sku-header-info { flex: 1; }
+.sku-header-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; line-height: 1.4; color: var(--text-primary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sku-header-price { font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
+.sku-header-pid { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; font-family: 'SF Mono', monospace; }
+.sku-header-buyer { font-size: 11px; color: var(--accent); margin-top: 3px; font-weight: 500; }
+.sku-section { margin-bottom: 18px; }
+.sku-section-title { font-size: 11px; font-weight: 600; margin-bottom: 8px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
+.sku-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.sku-option { padding: 6px 11px; border: 1px solid var(--border); border-radius: 980px; font-size: 12px; cursor: pointer; transition: var(--transition); color: var(--text-primary); font-weight: 400; }
+.sku-option:hover { border-color: var(--accent); color: var(--accent); }
+.sku-option.selected { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: 500; }
+.sku-empty { font-size: 12px; color: var(--text-tertiary); }
+.quantity-row { display: flex; align-items: center; gap: 12px; }
+.quantity-ctrl { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 980px; overflow: hidden; }
+.quantity-btn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text-secondary); transition: var(--transition); user-select: none; }
+.quantity-btn:hover { background: var(--surface); color: var(--text-primary); }
+.quantity-input { width: 40px; height: 34px; text-align: center; border: none; font-size: 14px; font-weight: 600; color: var(--text-primary); background: transparent; }
+.add-cart-btn { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 980px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 18px; transition: var(--transition); letter-spacing: -0.01em; }
+.add-cart-btn:hover { background: var(--accent-hover); }
+.sku-added-feedback { background: var(--success); color: #fff; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; text-align: center; margin-top: 10px; animation: fadeSlideIn 0.3s ease; }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== Lightbox ===== */
+.lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 400; align-items: center; justify-content: center; cursor: zoom-out; }
+.lightbox-overlay.active { display: flex; }
+.lightbox-img { max-width: 88vw; max-height: 88vh; border-radius: var(--radius-md); object-fit: contain; }
+
+/* ===== Cart Page ===== */
+.cart-page { display: none; }
+.cart-page.active { display: flex; }
+.products-page.hidden { display: none !important; }
+.settings-page { display: none; }
+.settings-page.active { display: flex; }
+.buyers-page { display: none; }
+.buyers-page.active { display: flex; }
+.buyers-search-bar { margin: 0 0 20px; }
+.buyers-search-input { width: 100%; max-width: 360px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 980px; font-size: 13px; color: var(--text-primary); background: var(--surface); outline: none; transition: var(--transition); }
+.buyers-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+.buyers-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; }
+@media (max-width: 1400px){ .buyers-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 900px){ .buyers-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px){ .buyers-grid { grid-template-columns: repeat(2, 1fr); } }
+.buyer-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: var(--transition); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.buyer-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.10); transform: translateY(-2px); }
+.buyer-qr-wrap { position: relative; width: 100%; aspect-ratio: 1/1; max-height: 300px; background: #f7f7f8; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.buyer-qr-wrap img { width: 100%; height: 100%; max-width: 300px; object-fit: contain; }
+.buyer-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.buyer-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.buyer-tags { display: flex; flex-wrap: nowrap; gap: 5px; min-height: 22px; }
+.buyer-tag { display: inline-block; padding: 2px 9px; border-radius: 980px; font-size: 11px; font-weight: 500; color: var(--accent); background: var(--accent-light); white-space: nowrap; }
+.buyer-add-btn { margin-top: auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 9px 12px; border: none; border-radius: 980px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; color: #fff; background: var(--accent); transition: var(--transition); }
+.buyer-add-btn:hover { filter: brightness(0.95); }
+
+/* ===== SPU-PID Lookup Page ===== */
+.lookup-page { display: none; }
+.lookup-page.active { display: flex; }
+.lookup-box { background: var(--card-bg); border-radius: var(--radius-lg); padding: 18px 20px; border: 0.5px solid rgba(0,0,0,0.06); box-shadow: var(--shadow-sm); margin-bottom: 18px; }
+.lookup-tips { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
+.lookup-tips b { color: var(--text-secondary); }
+.lookup-count { color: var(--accent); font-weight: 500; white-space: nowrap; }
+.lookup-input { width: 100%; min-height: 110px; max-height: 260px; resize: vertical; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 13px; font-family: 'SF Mono','Menlo',monospace; line-height: 1.6; background: var(--bg); color: var(--text-primary); box-sizing: border-box; }
+.lookup-input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(0,113,227,0.08); }
+.lookup-actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.lookup-cols { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; padding: 10px 12px; background: var(--surface); border-radius: var(--radius-sm); }
+.lookup-cols-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+.lookup-cols-items { display: flex; gap: 6px; flex-wrap: wrap; }
+.lk-col-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 4px 10px; border-radius: 980px; border: 1px solid var(--border-light); background: var(--card-bg); color: var(--text-secondary); cursor: pointer; user-select: none; transition: var(--transition); }
+.lk-col-chip input { margin: 0; cursor: pointer; }
+.lk-col-chip.on { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.lookup-cols-op { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 500; }
+.lookup-cols-op:hover { text-decoration: underline; }
+.lookup-actions-right { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.lookup-stats { font-size: 12px; color: var(--text-tertiary); margin-top: 10px; }
+.lookup-stats .ok { color: var(--success); }
+.lookup-stats .miss { color: var(--danger); }
+.lookup-result-wrap { overflow-x: auto; }
+.lookup-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card-bg); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+.lookup-table th, .lookup-table td { padding: 9px 12px; text-align: left; border-bottom: 0.5px solid rgba(0,0,0,0.07); white-space: nowrap; }
+.lookup-table th { background: var(--surface); font-weight: 600; color: var(--text-secondary); font-size: 12px; position: sticky; top: 0; }
+.lookup-table td { font-family: 'SF Mono','Menlo',monospace; color: var(--text-primary); }
+.lookup-table tr:hover td { background: var(--surface); }
+.lookup-table .lk-key { font-weight: 600; }
+.lookup-table .lk-buyer { font-family: -apple-system, 'PingFang SC', sans-serif; color: var(--text-secondary); }
+.lookup-table .lk-miss { color: var(--text-tertiary); }
+.lookup-table .lk-notfound td { color: var(--danger); font-family: inherit; }
+.lk-input-type { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-family: inherit; font-weight: 600; }
+.lk-input-type.spu { background: var(--accent-light); color: var(--accent); }
+.lk-input-type.pid { background: #fff0f0; color: #ff3b30; }
+
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); }
+.page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; font-weight: 400; }
+
+.cart-item { display: flex; align-items: stretch; gap: 26px; background: var(--card-bg); border-radius: var(--radius-md); padding: 22px 26px; margin-bottom: 14px; border: 0.5px solid rgba(0,0,0,0.06); transition: var(--transition); width: 100%; box-sizing: border-box; }
+.cart-item:hover { box-shadow: var(--shadow-sm); }
+.cart-item-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+.cart-item-imgwrap { flex-shrink: 0; cursor: zoom-in; border-radius: var(--radius-md); overflow: hidden; }
+.cart-item-img { width: 260px; height: 260px; border-radius: var(--radius-md); object-fit: cover; display: block; transition: filter 0.15s, transform 0.15s; }
+.cart-item-imgwrap:hover .cart-item-img { filter: brightness(1.04); transform: scale(1.03); }
+.cart-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.cart-item-detail { min-width: 0; }
+.cart-item-title { font-size: 17px; font-weight: 600; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-item-pid { font-size: 13px; color: var(--text-tertiary); font-family: 'SF Mono', monospace; }
+.cart-sku-list { margin-left: 0; }
+.cart-sku-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--surface); font-size: 13px; }
+.cart-sku-row:last-child { border-bottom: none; }
+.cart-sku-spec { color: var(--text-secondary); flex: 1; min-width: 0; }
+.cart-sku-qty { font-weight: 600; color: var(--text-primary); width: 50px; text-align: center; }
+.cart-sku-del { color: var(--text-tertiary); cursor: pointer; font-size: 12px; width: 40px; text-align: right; transition: var(--transition); }
+.cart-sku-del:hover { color: var(--danger); }
+/* ===== 圈品池卡片式布局 ===== */
+.cart-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: stretch; }
+@media (max-width: 1500px) { .cart-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 1050px) { .cart-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px)  { .cart-grid { grid-template-columns: 1fr; } }
+.cart-card { position: relative; display: flex; flex-direction: column; background: var(--card-bg); border-radius: var(--radius-md); border: 0.5px solid rgba(0,0,0,0.08); overflow: hidden; transition: var(--transition); }
+.cart-card:hover { box-shadow: var(--shadow-sm); }
+.cart-card.selected { border-color: var(--accent, #ff5a4d); box-shadow: 0 0 0 1.5px var(--accent, #ff5a4d); }
+.cart-card-check { position: absolute; top: 10px; left: 10px; z-index: 3; width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+.cart-card-imgwrap { position: relative; cursor: zoom-in; background: var(--surface); }
+.cart-card-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+.cart-card-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.cart-card-spu { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-card-meta { font-size: 12px; color: var(--text-tertiary); font-family: 'SF Mono', monospace; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.cart-card-country { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #2563eb; background: rgba(37,99,235,0.08); padding: 1px 7px; border-radius: 5px; }
+.cart-sku-edit { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+.cart-sku-erow { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6px; padding: 6px; background: var(--surface); border-radius: 6px; }
+.cart-sku-color { font-size: 12px; color: var(--text-secondary); grid-column: 1 / -1; }
+.cart-edit-field { display: flex; align-items: center; gap: 4px; }
+.cart-edit-field label { font-size: 11px; color: var(--text-tertiary); }
+.cart-edit-input { width: 62px; padding: 4px 6px; font-size: 12px; border: 1px solid var(--border); border-radius: 5px; text-align: center; box-sizing: border-box; }
+.cart-edit-input.qty { width: 48px; }
+.cart-edit-input:focus { outline: none; border-color: var(--accent, #ff5a4d); }
+.cart-sku-erow .cart-sku-del { width: auto; }
+.cart-card-total { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: auto; }
+
+/* ===== Fixed Bottom Bar ===== */
+.cart-bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.8); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: 0.5px solid rgba(0,0,0,0.09); padding: 12px 22px; display: none; z-index: 90; }
+.cart-bottom-bar.active { display: block; }
+.cart-bottom-inner { max-width: 1360px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+.select-all-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 980px; font-size: 12px; cursor: pointer; background: transparent; color: var(--text-primary); transition: var(--transition); font-weight: 500; }
+.select-all-btn:hover { border-color: var(--accent); color: var(--accent); }
+.select-all-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+.cart-batch-size { display: inline-flex; align-items: center; gap: 6px; }
+.cart-batch-input { width: 148px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 980px; font-size: 12px; color: var(--text-primary); background: var(--surface); outline: none; transition: var(--transition); }
+.cart-batch-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+.cart-batch-btn { padding: 8px 14px; border: none; border-radius: 980px; font-size: 12px; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; transition: var(--transition); white-space: nowrap; }
+.cart-batch-btn:hover { filter: brightness(0.95); }
+.cart-actions { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
+.cart-actions button { padding: 8px 20px; border-radius: 980px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: var(--transition); }
+.btn-export-pid { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-light); }
+.btn-export-pid:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.btn-export-full { background: var(--accent); color: #fff; }
+.btn-export-full:hover { background: var(--accent-hover); }
+
+/* ===== Settings ===== */
+.settings-section { background: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 14px; border: 0.5px solid rgba(0,0,0,0.06); box-shadow: var(--shadow-sm); }
+.settings-title { font-size: 17px; font-weight: 600; margin-bottom: 18px; letter-spacing: -0.02em; }
+.form-group { margin-bottom: 18px; }
+.form-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display: block; font-weight: 500; }
+.form-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 5px; }
+.form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 14px; transition: var(--transition); background: var(--bg); color: var(--text-primary); }
+.form-input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(0,113,227,0.08); }
+.form-input::placeholder { color: var(--text-tertiary); }
+.form-textarea { min-height: 72px; resize: vertical; }
+.save-btn { padding: 12px 32px; background: var(--accent); color: #fff; border: none; border-radius: 980px; font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+.save-btn:hover { background: var(--accent-hover); }
+
+/* ===== Search Select ===== */
+.search-select-wrap { position: relative; }
+.search-select-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 14px; transition: var(--transition); background: var(--bg); }
+.search-select-input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(0,113,227,0.08); }
+.search-select-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card-bg); border: 0.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-md); max-height: 240px; overflow-y: auto; z-index: 50; display: none; box-shadow: var(--shadow-lg); }
+.search-select-dropdown.open { display: block; }
+.search-select-item { padding: 10px 14px; cursor: pointer; font-size: 13px; transition: background 0.12s; }
+.search-select-item:hover { background: var(--surface); }
+.search-select-item.selected { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+.agency-custom-tag { display: inline-block; margin-left: 8px; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; color: var(--accent); background: var(--accent-light); vertical-align: middle; }
+.agency-create-item { display: flex; align-items: center; gap: 8px; color: var(--accent); font-weight: 600; border-top: 1px dashed var(--border); }
+.agency-create-item:hover { background: var(--accent-light); }
+.agency-create-hint { margin-left: auto; font-size: 10px; font-weight: 400; color: var(--text-secondary); }
+.search-select-empty { padding: 10px 14px; color: var(--text-tertiary); font-size: 12px; }
+
+/* ===== Toast ===== */
+.toast { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); background: var(--text-primary); color: #fff; padding: 10px 22px; border-radius: 980px; font-size: 13px; font-weight: 500; z-index: 300; display: none; animation: toastIn 0.3s ease; box-shadow: var(--shadow-lg); }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* ===== Empty State ===== */
+.empty-state { text-align: center; padding: 72px 20px; }
+.empty-state-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
+.empty-state-text { font-size: 14px; color: var(--text-tertiary); }
+
+/* ===== Loading ===== */
+.loading-state { text-align: center; padding: 60px 20px; }
+.loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border-light); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text-tertiary); }
+
+/* ===== Responsive ===== */
+@media (max-width: 960px) {
+  .sidebar { display: none; }
+  .layout-wrap { padding: 16px 16px 120px; }
+}
+@media (max-width: 768px) {
+  .nav-tabs { display: none; }
+  .nav-welcome { display: none; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .sku-modal { width: 95%; }
+  .sku-layout { grid-template-columns: 1fr; }
+  .sku-left { border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: 18px; }
+  .sku-big-img { max-height: 320px; }
+  .sku-right { padding: 20px; }
+  .cart-sku-list { margin-left: 0; }
+  .cart-item { gap: 14px; padding: 14px; }
+  .cart-item-img { width: 150px; height: 150px; }
+  .login-card { padding: 36px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Login Page ===== -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">运动品类选品小站</div>
+    <div class="login-subtitle">TikTok 运动品类选品工具</div>
+
+    <!-- Step 1: 访问口令 -->
+    <div id="codeStep">
+      <div class="login-form">
+        <label class="login-label">请输入访问口令</label>
+        <input class="login-input" id="codeInput" type="password" placeholder="访问口令" onkeydown="if(event.key==='Enter')checkCode()">
+        <button class="login-btn" onclick="checkCode()">验证</button>
+        <div class="login-error" id="codeError">口令错误，请联系买手获取</div>
+      </div>
+    </div>
+
+    <!-- Step 2: 机构账号登录 -->
+    <div id="loginStep" style="display:none">
+      <div class="login-form">
+        <label class="login-label">机构账号</label>
+        <input class="login-input" id="loginUser" placeholder="账号" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+        <label class="login-label">密码</label>
+        <input class="login-input" id="loginPass" type="password" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="login-btn" onclick="doLogin()">登录</button>
+        <div class="login-error" id="loginError">账号或密码错误</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Main App ===== -->
+<div class="app-wrap" id="appWrap" style="display:none">
+  <nav class="nav">
+    <div class="nav-left">
+      <div class="nav-logo">运动品类选品小站</div>
+      <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchPage('products')">商品浏览</div>
+        <div class="nav-tab" onclick="switchPage('cart')">圈品池</div>
+        <div class="nav-tab" onclick="switchPage('lookup')">SPU-PID互查</div>
+        <a class="nav-tab nav-tab-link" href="https://bytedance.sg.larkoffice.com/base/RxMqb4I5yaNXo0sMkNUlC6T0gVb?table=tbl17giD6xvXjeKf&view=vewwJET044" target="_blank" rel="noopener">立即申样</a>
+        <div class="nav-tab" onclick="switchPage('buyers')">联系买手</div>
+        <div class="nav-tab" onclick="switchPage('settings')">机构设置</div>
+      </div>
+      <div class="nav-welcome" id="navWelcome">
+        <span class="nav-welcome-main" id="welcomeText">Hi，欢迎来到运动品类选品小站</span>
+        <span class="nav-welcome-sub">挑选心仪商品加入圈品池，批量导出申样记录</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="agency-badge" id="agencyBadge">未选择机构</div>
+      <div class="cart-badge" onclick="switchPage('cart')">
+        圈品池
+        <span class="cart-count" id="cartCount">0</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 专题导航条(Banner 位):介于顶部导航与筛选栏之间,展示强展示专题 + 预留位 -->
+  <div class="topic-nav" id="topicNav">
+    <span class="topic-nav-label">专题</span>
+    <div class="topic-nav-items" id="topicNavItems"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Lightbox -->
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <img class="lightbox-img" id="lightboxImg" src="" referrerpolicy="no-referrer">
+  </div>
+
+  <!-- Products Page -->
+  <div class="products-page" id="productsPage">
+    <div class="layout-wrap">
+      <div class="main-content">
+        <div class="topic-banner" id="topicBanner">
+          <span class="tb-fire">🔥</span>
+          <div>
+            <div class="tb-title" id="topicBannerTitle">跑步鞋精选</div>
+            <div class="tb-sub" id="topicBannerSub">运动爆品专题 · 精选好货</div>
+          </div>
+          <button class="tb-back" onclick="exitTopic()">← 返回全部商品</button>
+        </div>
+        <div class="frozen-head">
+        <div class="filter-bar" id="filterBar">
+          <div class="filter-basic">
+            <input class="filter-input search-main" id="filterSearch" placeholder="搜索 PID / SPU / 店铺 / 供应商 / 买手...">
+            <div class="ms-wrap" id="msCountry" data-field="country" data-label="国家"></div>
+            <div class="ms-wrap" id="msCat2" data-field="category2" data-label="二级类目"></div>
+            <div class="ms-wrap" id="msCat3" data-field="category3" data-label="三级类目"></div>
+            <div class="ms-wrap" id="msTag" data-field="tag" data-label="商品标签"></div>
+            <select class="filter-select" id="filterNew" title="按是否为本期新增商品筛选" onchange="applyFilters()">
+              <option value="">本期新增</option>
+              <option value="yes">是</option>
+              <option value="no">否</option>
+            </select>
+            <div class="filter-range" title="店铺分数(SPS)区间,只填最低或最高一侧即可筛选">
+              <span class="fr-label">SPS</span>
+              <input class="filter-input fr-num" type="number" step="0.01" id="filterSpsMin" placeholder="最低">
+              <span class="fr-sep">~</span>
+              <input class="filter-input fr-num" type="number" step="0.01" id="filterSpsMax" placeholder="最高">
+            </div>
+            <div class="filter-range" title="大盘营销价(美金)区间,只填最低或最高一侧即可筛选">
+              <span class="fr-label">价格$</span>
+              <input class="filter-input fr-num" type="number" step="0.01" min="0" id="filterPriceMin" placeholder="最低">
+              <span class="fr-sep">~</span>
+              <input class="filter-input fr-num" type="number" step="0.01" min="0" id="filterPriceMax" placeholder="最高">
+            </div>
+            <button class="filter-btn primary" onclick="applyFilters()">搜索</button>
+            <button class="filter-btn ghost" onclick="resetFilters()">重置</button>
+            <div class="channel-legend" title="商品卡下方渠道占比条的颜色含义">
+              <span class="cl-item"><span class="cl-swatch cl-video"></span>短视频</span>
+              <span class="cl-item"><span class="cl-swatch cl-live"></span>直播</span>
+              <span class="cl-item"><span class="cl-swatch cl-shelf"></span>货架</span>
+            </div>
+            <button class="filter-guide-btn" onclick="openGuide()" title="查看爆款/高潜/新品标签定义">&#x1F4D6; 标签说明</button>
+          </div>
+          <div class="filter-advanced" id="filterAdvanced">
+            <div class="filter-range" title="上架日期区间">
+              <span class="fr-label">上架</span>
+              <input class="filter-input fr-date" type="date" id="filterUploadFrom" title="上架起始日期">
+              <span class="fr-sep">~</span>
+              <input class="filter-input fr-date" type="date" id="filterUploadTo" title="上架截止日期">
+            </div>
+            <select class="filter-select" id="filterHistRange"><option value="">历史累计销量</option></select>
+            <select class="filter-select" id="filterRange7"><option value="">近7天销量</option></select>
+            <select class="filter-select" id="filterRangeT1"><option value="">昨日销量</option></select>
+            <select class="filter-select" id="filterDataDate"><option value="">更新日期</option></select>
+            <div class="ms-wrap" id="msDeveloper" data-field="developer" data-label="买手"></div>
+            <select class="filter-select" id="filterSort">
+              <option value="histDesc" selected>按历史销量从高到低</option>
+              <option value="histAsc">按历史销量从低到高</option>
+              <option value="sales7">按近7天销量从高到低</option>
+              <option value="sales7Asc">按近7天销量从低到高</option>
+              <option value="wowDesc">按近3天环比从高到低</option>
+              <option value="priceDesc">按价格从高到低</option>
+              <option value="priceAsc">按价格从低到高</option>
+              <option value="dateDesc">按上架时间从新到旧</option>
+            </select>
+          </div>
+          <div class="filter-stats" id="filterStats"></div>
+        </div>
+        <button class="filterbar-toggle" id="filterBarToggle" onclick="toggleFilterBar()" title="隐藏/显示搜索筛选栏">
+          <span class="fbt-label">隐藏搜索栏</span> <span class="fbt-arrow">&#x25B2;</span>
+        </button>
+        </div><!-- /.frozen-head -->
+        <div class="filter-show-row" id="filterShowRow">
+          <button class="filter-show-btn" id="filterShowBtn" onclick="toggleFilterBar()" title="展开搜索与筛选栏">&#x1F50D; 显示搜索栏 <span class="fbt-arrow">&#x25BC;</span></button>
+          <div class="channel-legend" title="商品卡下方渠道占比条的颜色含义">
+            <span class="cl-item"><span class="cl-swatch cl-video"></span>短视频</span>
+            <span class="cl-item"><span class="cl-swatch cl-live"></span>直播</span>
+            <span class="cl-item"><span class="cl-swatch cl-shelf"></span>货架</span>
+          </div>
+          <button class="filter-guide-btn" onclick="openGuide()" title="查看爆款/高潜/新品标签定义">&#x1F4D6; 标签说明</button>
+        </div>
+        <div class="scroll-area" id="scrollArea">
+          <div id="productGrid"></div>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPU-PID Lookup Page -->
+  <div class="layout-wrap lookup-page" id="lookupPage">
+    <div class="main-content" style="max-width:1080px;margin:0 auto;">
+      <div class="page-header">
+        <div class="page-title">SPU-PID 互查</div>
+        <div class="page-subtitle">输入 SPU 查各国 PID，或输入 PID 反查 SPU / 国家；支持批量查询、复制、导出、下载</div>
+      </div>
+
+      <div class="lookup-box">
+        <div class="lookup-tips">
+          <span>支持一次粘贴多个,用<b>换行 / 逗号 / 空格</b>分隔;系统自动识别 SPU 与 PID</span>
+          <span class="lookup-count" id="lookupDbCount"></span>
+        </div>
+        <textarea class="lookup-input" id="lookupInput" placeholder="示例:&#10;S1234567890&#10;728901234567890123&#10;也可用逗号/空格分隔:S1000, S1001 728901234567890"></textarea>
+        <div class="lookup-cols" id="lookupCols">
+          <span class="lookup-cols-label">显示国家列:</span>
+          <span class="lookup-cols-items" id="lookupColsItems"></span>
+          <a class="lookup-cols-op" onclick="setLookupCols(true)">全选</a>
+          <a class="lookup-cols-op" onclick="setLookupCols(false)">全不选</a>
+        </div>
+        <div class="lookup-actions">
+          <button class="filter-btn primary" onclick="runLookup()">查询</button>
+          <button class="filter-btn ghost" onclick="clearLookup()">清空</button>
+          <div class="lookup-actions-right" id="lookupResultActions" style="display:none;">
+            <button class="filter-btn ghost" onclick="copyLookupResult()">复制结果</button>
+            <button class="filter-btn ghost" onclick="exportLookupResult('csv')">导出 CSV</button>
+            <button class="filter-btn ghost" onclick="exportLookupResult('xlsx')">导出 Excel</button>
+          </div>
+        </div>
+        <div class="lookup-stats" id="lookupStats"></div>
+      </div>
+
+      <div class="lookup-result-wrap" id="lookupResultWrap"></div>
+    </div>
+  </div>
+
+  <!-- Cart Page -->
+  <div class="layout-wrap cart-page" id="cartPage">
+    <div class="main-content" style="max-width:1760px;margin:0 auto;width:100%;">
+      <div class="page-header">
+        <div class="page-title">圈品池</div>
+        <div class="page-subtitle" id="cartSubtitle">选择商品后导出申样记录</div>
+      </div>
+      <div id="cartContent"></div>
+    </div>
+  </div>
+
+  <!-- Cart Bottom Bar -->
+  <div class="cart-bottom-bar" id="cartBottomBar">
+    <div class="cart-bottom-inner">
+      <div class="select-all-btn" id="selectAllBtn" onclick="toggleSelectAll()">全选</div>
+      <div class="cart-batch-size" title="对已勾选商品批量统一设置尺码">
+        <input class="cart-batch-input" id="batchSizeInput" type="text" placeholder="批量改尺码 如 S/M/均码"
+          onkeydown="if(event.key==='Enter')applyBatchSize()">
+        <button class="cart-batch-btn" onclick="applyBatchSize()">应用</button>
+      </div>
+      <div class="cart-batch-size" title="对已勾选商品批量统一设置件数">
+        <input class="cart-batch-input" id="batchQtyInput" type="text" inputmode="numeric" placeholder="批量改件数 纯数字"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+          onkeydown="if(event.key==='Enter')applyBatchQty()">
+        <button class="cart-batch-btn" onclick="applyBatchQty()">应用</button>
+      </div>
+      <div class="cart-actions">
+        <button class="btn-export-pid" onclick="copyCartPIDs()">复制 PID</button>
+        <button class="btn-export-pid" onclick="exportPID()">导出 PID 列表</button>
+        <button class="btn-export-pid" onclick="copyCartRecords()">复制申样记录</button>
+        <button class="btn-export-full" onclick="exportFull()">导出批量申样记录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Page -->
+  <div class="layout-wrap settings-page" id="settingsPage">
+    <div class="main-content" style="max-width:580px;margin:0 auto;">
+      <div class="page-header">
+        <div class="page-title">机构设置</div>
+        <div class="page-subtitle">维护基础信息，导出时自动填充到申样记录中</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">机构信息</div>
+        <div class="form-group">
+          <label class="form-label">机构名称</label>
+          <div class="search-select-wrap">
+            <input class="search-select-input" id="agencySearchInput" placeholder="搜索机构名称..." autocomplete="off" oninput="filterAgenciesList()" onfocus="openAgencyDropdown()">
+            <div class="search-select-dropdown" id="agencyDropdown"></div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">达人信息</div>
+        <div class="form-group">
+          <label class="form-label">达人名称</label>
+          <input class="form-input" id="setCreatorName" placeholder="达人名称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">达人 Handle</label>
+          <input class="form-input" id="setCreatorHandle" placeholder="TikTok handle">
+        </div>
+        <div class="form-group">
+          <label class="form-label">链接</label>
+          <input class="form-input" id="setLink" placeholder="相关链接">
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">收货地址</div>
+        <div class="form-group">
+          <label class="form-label">收件人</label>
+          <input class="form-input" id="setReceiverName" placeholder="收件人姓名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系电话</label>
+          <input class="form-input" id="setReceiverPhone" placeholder="手机号或座机号码">
+          <div class="form-hint">支持座机号码，例如（021）3880523</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">详细地址</label>
+          <textarea class="form-input form-textarea" id="setAddress" placeholder="省市区 + 详细地址，如：浙江省杭州市西湖区文三路259号"></textarea>
+          <div class="form-hint">系统将自动从地址中解析城市与省份</div>
+        </div>
+      </div>
+      <button class="save-btn" onclick="saveSettings()">保存设置</button>
+    </div>
+  </div>
+
+  <!-- Buyers Page (联系买手 · 纯买手名片墙) -->
+  <div class="layout-wrap buyers-page" id="buyersPage">
+    <div class="main-content" style="max-width:none;margin:0;width:100%;padding-left:40px;padding-right:40px;box-sizing:border-box;">
+      <div class="page-header">
+        <div class="page-title">联系买手</div>
+        <div class="page-subtitle">扫码或点击添加对应品类买手，直接对接选品需求</div>
+      </div>
+      <div id="buyersContent"></div>
+    </div>
+  </div>
+
+  <!-- SKU Modal -->
+  <div class="modal-overlay" id="skuModal">
+    <div class="sku-modal" id="skuModalContent"></div>
+  </div>
+
+  <!-- Floating buttons (browse page) -->
+  <button class="float-copy-pid" id="floatCopyPid" onclick="copyCartPIDs()">📋 复制当前圈品池的PID</button>
+  <button class="float-cart" id="floatCart" onclick="switchPage('cart')">🛒 圈品池 <span class="fc-count" id="floatCartCount">0</span></button>
+  <button class="float-back-pool" id="floatBackPool" onclick="exitTopic()" title="返回全部商品(主商品池)">← 返回主商品池</button>
+
+  <!-- Tag Guide Modal -->
+  <div class="modal-overlay" id="guideModal">
+    <div class="guide-modal">
+      <h2>标签说明</h2>
+      <div class="guide-sub">围栏指标解释（针对运动品类 · A 列标签定义）</div>
+
+      <div class="guide-sec">
+        <div class="guide-sec-title"><span class="guide-chip thot">爆款</span></div>
+        <div class="guide-item">近 7 天 · 订单量 <b>&gt;100</b> · <b>US + UK</b>（运动品类）</div>
+        <div class="guide-item">近 7 天 · 订单量 <b>&gt;50</b> · <b>MX + EU</b>（运动品类）</div>
+      </div>
+
+      <div class="guide-sec">
+        <div class="guide-sec-title"><span class="guide-chip tpot">高潜</span></div>
+        <div class="guide-item">近 7 天 · 订单量 <b>&gt;20</b> · 环比增速 <b>&gt;50%</b> · <b>US + UK + MX + EU</b>（运动品类）</div>
+      </div>
+
+      <div class="guide-sec">
+        <div class="guide-sec-title"><span class="guide-chip tnew">新品</span></div>
+        <div class="guide-item">上架 30 天内（近 7 天数据）· 单量 <b>&gt;10</b>（运动品类）</div>
+      </div>
+
+      <button class="guide-close" onclick="closeGuide()">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== State =====
+let PRODUCTS = [];          // 当前生效的数据池(指向大池子或专题池)
+let MAIN_POOL = [];         // 大池子:全量商品(data/products.csv)
+let TOPIC_POOL = null;      // 专题池:跑步鞋精选(懒加载,加载后缓存)
+let ACTIVE_POOL = 'main';   // 'main' | 'topic',标记当前商品浏览页展示的是哪个池子
+let cart = [];
+let userSettings = JSON.parse(localStorage.getItem('agencySettings') || '{}');
+let currentProduct = null;
+let selectedColor = null;
+let selectedSize = null;
+let selectedPIDs = new Set();
+let filteredProducts = [];
+let currentPage = 1;
+const PAGE_SIZE = 28; // 每页 4 行 × 7 列
+let currentUser = null;
+
+// ===== SPU-PID 互查 数据 =====
+const LOOKUP_COUNTRIES = ['DE','ES','FR','IT','GB','US','MX'];
+let PID_MAP = {};        // spu -> { DE, ES, FR, IT, GB, US, MX }
+let PID_INDEX = {};      // pid -> { spu, country }
+let PID_MAP_LOADED = false;
+let PID_MAP_LOADING = false;
+let lastLookupRows = []; // 最近一次查询结果(用于复制/导出)
+let lookupSelectedCols = ['DE','ES','FR','IT','GB','US','MX']; // 导出/显示时勾选的国家列
+
+// ===== 访问策略 =====
+// 第一道门槛: 全站访问口令; 第二道: 机构账号密码登录
+// sessionStorage 记住本次会话登录状态
+
+function checkSession() {
+  // 已登录 → 直接进入
+  if (sessionStorage.getItem('loggedIn') === '1') {
+    var agency = sessionStorage.getItem('agencyName') || '';
+    if (agency) {
+      try {
+        var s = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        if (!s.agencyName) { s.agencyName = agency; localStorage.setItem('userSettings', JSON.stringify(s)); }
+      } catch(e){}
+    }
+    showApp();
+    return;
+  }
+  // 口令已通过但未登录 → 显示登录步骤
+  if (sessionStorage.getItem('codePassed') === '1') {
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('codeStep').style.display = 'none';
+    document.getElementById('loginStep').style.display = 'block';
+    return;
+  }
+  // 未验证 → 显示口令步骤
+  document.getElementById('loginPage').style.display = 'flex';
+}
+
+function checkCode() {
+  var input = (document.getElementById('codeInput').value || '').trim();
+  var code = (typeof ACCESS_CODE !== 'undefined') ? ACCESS_CODE : '';
+  if (!code || input === code) {
+    sessionStorage.setItem('codePassed', '1');
+    document.getElementById('codeStep').style.display = 'none';
+    document.getElementById('loginStep').style.display = 'block';
+    document.getElementById('codeError').style.display = 'none';
+  } else {
+    document.getElementById('codeError').style.display = 'block';
+  }
+}
+
+function doLogin() {
+  var user = (document.getElementById('loginUser').value || '').trim();
+  var pass = (document.getElementById('loginPass').value || '').trim();
+  var accounts = (typeof ACCOUNTS !== 'undefined') ? ACCOUNTS : [];
+  var matched = accounts.find(function(a) { return a.username === user && a.password === pass; });
+  if (matched) {
+    sessionStorage.setItem('loggedIn', '1');
+    sessionStorage.setItem('agencyName', matched.agencyName || '');
+    // 自动填入机构设置
+    try {
+      var s = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      if (!s.agencyName) { s.agencyName = matched.agencyName; localStorage.setItem('userSettings', JSON.stringify(s)); }
+    } catch(e){}
+    document.getElementById('loginPage').style.display = 'none';
+    showApp();
+    document.getElementById('loginError').style.display = 'none';
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function showApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appWrap').style.display = 'block';
+  loadProductData();
+  maybeShowSettingsTip();
+  initFabDrag();
+}
+
+// ===== 侧边浮动按钮:每个按钮独立可拖动(左右侧栏 + 上下任意位置),各自记忆位置 =====
+let _fabDidDrag = false;
+// 每个按钮独立配置:元素 id + 独立存储键 + 默认竖直比例(避免默认重叠)
+const FAB_DEFS = [
+  { id: 'fabGuide',  key: 'fabPos_guide_v2',  defRatio: 0.40 },
+  { id: 'fabSample', key: 'fabPos_sample_v2', defRatio: 0.56 }
+];
+
+function initFabDrag() {
+  FAB_DEFS.forEach(def => bindOneFab(def));
+  window.addEventListener('resize', () => {
+    FAB_DEFS.forEach(def => {
+      const el = document.getElementById(def.id);
+      if (el) applyFabPos(el, loadFabPos(def.key, def.defRatio));
+    });
+  });
+}
+
+function bindOneFab(def) {
+  const el = document.getElementById(def.id);
+  if (!el || el.dataset.dragBound === '1') return;
+  el.dataset.dragBound = '1';
+
+  // 恢复该按钮已保存的位置
+  applyFabPos(el, loadFabPos(def.key, def.defRatio));
+
+  let startX = 0, startY = 0, originLeft = 0, originTop = 0, dragging = false, moved = false;
+
+  function onDown(e) {
+    const pt = e.touches ? e.touches[0] : e;
+    const rect = el.getBoundingClientRect();
+    // 切换到 left/top 绝对定位,便于自由拖动
+    el.style.right = 'auto';
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+    originLeft = rect.left; originTop = rect.top;
+    startX = pt.clientX; startY = pt.clientY;
+    dragging = true; moved = false;
+    el.classList.add('dragging');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const pt = e.touches ? e.touches[0] : e;
+    const dx = pt.clientX - startX, dy = pt.clientY - startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+    if (e.cancelable) e.preventDefault();
+    let nl = originLeft + dx, nt = originTop + dy;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    nl = Math.max(0, Math.min(nl, window.innerWidth - w));
+    nt = Math.max(0, Math.min(nt, window.innerHeight - h));
+    el.style.left = nl + 'px';
+    el.style.top = nt + 'px';
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+    _fabDidDrag = moved;
+    if (moved) snapFab(el, def.key);  // 松手后吸附到最近的左/右边
+    setTimeout(() => { _fabDidDrag = false; }, 60);
+  }
+  el.addEventListener('mousedown', onDown);
+  el.addEventListener('touchstart', onDown, { passive: true });
+}
+
+// 松手吸附:按当前中心 x 决定贴左还是贴右,记录 side + 竖直比例(每按钮独立)
+function snapFab(el, key) {
+  const rect = el.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const side = centerX < window.innerWidth / 2 ? 'left' : 'right';
+  const ratio = Math.max(0, Math.min(1, rect.top / Math.max(1, window.innerHeight - rect.height)));
+  const pos = { side, ratio };
+  saveFabPos(key, pos);
+  applyFabPos(el, pos);
+}
+function applyFabPos(el, pos) {
+  if (!el) return;
+  const h = el.offsetHeight;
+  const ratio = pos && typeof pos.ratio === 'number' ? pos.ratio : 0.45;
+  const top = Math.round((window.innerHeight - h) * ratio);
+  el.style.top = Math.max(0, Math.min(top, window.innerHeight - h)) + 'px';
+  if (pos && pos.side === 'left') {
+    el.classList.add('side-left');
+    el.style.left = '0'; el.style.right = 'auto';
+  } else {
+    el.classList.remove('side-left');
+    el.style.right = '0'; el.style.left = 'auto';
+  }
+}
+function loadFabPos(key, defRatio) {
+  try {
+    const v = JSON.parse(localStorage.getItem(key) || 'null');
+    if (v && typeof v.ratio === 'number') return v;
+  } catch (e) {}
+  return { side: 'right', ratio: (typeof defRatio === 'number' ? defRatio : 0.45) };
+}
+function saveFabPos(key, pos) {
+  try { localStorage.setItem(key, JSON.stringify(pos)); } catch (e) {}
+}
+// 拖动结束的那一下点击不触发按钮动作
+function onFabClick(e, fn) {
+  if (_fabDidDrag) { e.preventDefault(); return; }
+  fn();
+}
+function onFabAnchorClick(e) {
+  if (_fabDidDrag) { e.preventDefault(); return false; }
+  return true;
+}
+
+// 首次访问弹窗:提醒用户先完善个人/机构信息(未填过机构、每浏览器仅提醒一次)
+function maybeShowSettingsTip() {
+  try {
+    if (userSettings && userSettings.agencyName) return;
+    if (localStorage.getItem('settingsTipShown') === '1') return;
+    setTimeout(function() {
+      var go = confirm('欢迎来到运动品类选品小站！\n\n建议您先前往「机构设置」完善机构名称、收件人等个人信息，之后导出申样记录会更顺畅。\n\n点击「确定」现在去设置，点击「取消」稍后再说。');
+      localStorage.setItem('settingsTipShown', '1');
+      if (go) switchPage('settings');
+    }, 600);
+  } catch (e) {}
+}
+
+// Enter key on filters
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (document.activeElement && document.activeElement.closest('.filter-bar')) {
+      applyFilters();
+    }
+  }
+  if (e.key === 'Escape') {
+    msCloseAllPanels();
+  }
+});
+
+// 点击多选控件外部 → 关闭已展开的面板(面板已挂到 body,需同时排除面板本体)
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.ms-wrap') && !e.target.closest('.ms-panel')) {
+    msCloseAllPanels();
+  }
+});
+
+// 页面滚动/窗口尺寸变化时,重新定位或关闭已展开的 fixed 面板
+function msRepositionOpen() {
+  const panel = document.querySelector('.ms-panel.open');
+  if (panel) msPositionPanel(panel.getAttribute('data-field'));
+}
+window.addEventListener('resize', msRepositionOpen);
+window.addEventListener('scroll', function(e) {
+  // 面板内部滚动不关闭;仅页面/容器滚动才关闭
+  if (e.target && e.target.closest && e.target.closest('.ms-panel')) return;
+  msCloseAllPanels();
+}, true);
+
+// ===== Load CSV Data =====
+// 字段兼容层:同一逻辑字段支持「中文表头」或「英文键」,任取其一命中即可。
+// 以后直接把原始中文表头 CSV 覆盖 data/products.csv 即可,无需转换。
+const FIELD_ALIASES = {
+  dataDate:   ['数据日期', 'data_date'],
+  country:    ['原始国家', '国家', 'country'],
+  marketGroup:['市场组', 'market_group', 'marketGroup'],
+  tag:        ['商品标签', '新老品标签', 'tag'],
+  pid:        ['product_id', 'PID', 'pid', 'ProductId'],
+  spu:        ['spu_code', 'SPU', 'spu'],
+  shopId:     ['shop_id', 'shopId'],
+  shopCode:   ['shop_code', 'shopCode'],
+  shop:       ['店铺名称', 'shop_name', '店铺名', '店铺', 'shop', 'store'],
+  skm:        ['SKM标签', 'skm', 'skm_tag'],
+  cat2:       ['二级类目', 'cat2', 'category2'],
+  cat3:       ['三级类目', 'cat3', 'category3'],
+  leafCat:    ['叶子类目', 'leaf_category', 'leafCat'],
+  catCombo:   ['类目组合', 'cat_combo', 'catCombo'],
+  histSales:  ['历史累计支付子单量', 'hist_sales'],
+  histRange:  ['历史累计销量区间', 'hist_range'],
+  sales7:     ['近7日支付子单量', '近7天支付子单量', 'sales_7d'],
+  sales7Video:['近7天短视频支付子单量', 'sales_7d_video'],
+  sales7Live: ['近7天直播支付子单量', 'sales_7d_live'],
+  sales7Shelf:['近7天货架支付子单量', 'sales_7d_shelf'],
+  chPctVideo: ['场域_短视频占比', 'channel_video_pct'],
+  chPctLive:  ['场域_直播占比', 'channel_live_pct'],
+  chPctShelf: ['场域_货架占比', 'channel_shelf_pct'],
+  price:      ['大盘营销价-美金', '营销价', 'price', 'promo_price', 'promoPrice'],
+  range7:     ['近7天出单区间', 'range_7d'],
+  cur3:       ['近3天本期支付子单量', 'cur_3d'],
+  prev3:      ['近3天上期支付子单量', 'prev_3d'],
+  wow:        ['近3天环比增速', 'wow', 'wow_rate'],
+  wowTag:     ['近3天环比标签', 'wow_tag'],
+  salesT1:    ['T-1支付子单量', 'sales_t1'],
+  rangeT1:    ['T-1出单区间', 'range_t1'],
+  listDate:   ['全球首次上架日期', '上架时间', 'listDate', 'list_date', 'launch_date'],
+  onlineDays: ['上架天数', 'online_days'],
+  jit:        ['JIT标签', 'JIT', 'jit', 'is_jit', 'isJit', 'jit_tag'],
+  stock:      ['实际可售库存', '可用库存', 'stock', 'available_stock'],
+  jitStock:   ['JIT虚拟库存', 'jit_stock'],
+  colors:     ['颜色', '销售颜色英文名集合', 'colors', 'color'],
+  colorNum:   ['颜色数', 'color_num'],
+  sizes:      ['尺码', '尺寸集合', 'sizes', 'size'],
+  sizeNum:    ['尺码数', 'size_num'],
+  season:     ['季节标签', '季节', 'Season Tag', 'season tag', 'seasonTag', 'season_tag', 'season'],
+  image:      ['首图链接', '首图 url', '首图url', '首图', '主图', 'image', 'img', 'image_url'],
+  url:        ['商品详情页URL', '商品详情页url', '商品详情页', 'url', 'detail_url'],
+  supplier:   ['供应商名称', 'supplier'],
+  developer:  ['开发员名称', 'developer', '开发员'],
+  intakeDate: ['入池日期', 'intake_date', 'intakeDate', '入库日期', '入池时间']
+};
+// 从一行数据中,按别名列表取第一个存在(且非空表头)的值
+function pickField(row, key) {
+  const aliases = FIELD_ALIASES[key] || [key];
+  for (const a of aliases) {
+    if (row[a] !== undefined && row[a] !== null && String(row[a]).trim() !== '') return String(row[a]).trim();
+  }
+  // 再做一次「忽略大小写/空格」的宽松匹配,进一步兜底表头细微差异
+  const norm = s => String(s).toLowerCase().replace(/\s+/g, '');
+  const wanted = aliases.map(norm);
+  for (const k of Object.keys(row)) {
+    if (wanted.includes(norm(k)) && String(row[k]).trim() !== '') return String(row[k]).trim();
+  }
+  return '';
+}
+
+// SPS 分:位置和名称都可能变,只保证表头里含 "sps"(不区分大小写)
+function pickSps(row) {
+  for (const k of Object.keys(row)) {
+    if (k && String(k).toLowerCase().includes('sps') && String(row[k]).trim() !== '') return String(row[k]).trim();
+  }
+  return '';
+}
+// 按 PID 去重:同一 PID 可能因多行出现,只保留近7日单量最高(排名最靠前)的一条
+// 兜底:脱敏版删除了单量字段(全为0)时,用「近7天出单区间」的下界做排序权重,保证排名仍有意义
+function rangeWeight(raw) {
+  if (!raw) return 0;
+  const m = String(raw).match(/-?\d+(\.\d+)?/g);
+  if (!m || !m.length) return 0;
+  // 取区间下界(第一个数值)作为权重;"10000+" 形式取到 10000
+  return parseFloat(m[0]) || 0;
+}
+function dedupeByPid(list) {
+  const map = new Map();
+  const score = p => (p.sales7 > 0 ? p.sales7 : rangeWeight(p.range7));
+  // 同一 PID 出现在多期货盘时,优先保留「入池日期最新」的那一条(保证最新批次的品能被判为本期新增);
+  // 入池日期相同才比较近7日单量/出单区间,取高者。这样全量载入历史后,去重仍以最新批次为准。
+  const intakeKey = p => (p.intakeDate || '').trim();
+  const better = (a, b) => {   // a 是否应取代 b
+    const ka = intakeKey(a), kb = intakeKey(b);
+    if (ka !== kb) return ka > kb;   // ISO 归一化后的日期串可直接字典序比较,新日期胜出
+    return score(a) > score(b);
+  };
+  for (const p of list) {
+    const cur = map.get(p.pid);
+    if (!cur || better(p, cur)) map.set(p.pid, p);
+  }
+  return Array.from(map.values());
+}
+
+// 跨批次"本期新增"标注(差集口径):
+// 入参 dedupedList 是「已按 PID 去重、每个 PID 只保留最新批次那行」的列表;
+// batchPidSets 是「去重前」按入池日期批次收集的 PID 集合(Map: intakeDate -> Set(pid))。
+// 定义:最新批次 = 最大入池日期;上一批次 = 次大入池日期。
+//   isNew = true 仅当该 PID 属于最新批次 且 不在上一批次里(即相对上一批真正新增)。
+//   属于最新批次但上一批也有的 PID(历史出现过) → isNew=false,但仍归在最新批次层。
+// 每个商品的 batchRank 用于分层排序:0=最新批次;1=更早批次(按其归属入池日期降序细分)。
+// 若数据源没有「入池日期」列(全空),整体降级:不打标签、不改排序。
+function annotateNewBatch(dedupedList, batchPidSets) {
+  dedupedList.forEach(p => { p.isNew = false; });
+  const dates = [...(batchPidSets ? batchPidSets.keys() : [])].filter(Boolean).sort(); // ISO 升序
+  if (dates.length === 0) { dedupedList.__hasIntake = false; dedupedList.__latestBatch = ''; return dedupedList; }
+  const latest = dates[dates.length - 1];
+  const prev = dates.length >= 2 ? dates[dates.length - 2] : '';
+  const prevSet = prev ? (batchPidSets.get(prev) || new Set()) : new Set();
+  dedupedList.__hasIntake = true;
+  dedupedList.__latestBatch = latest;
+  dedupedList.forEach(p => {
+    const d = (p.intakeDate || '').trim();
+    // 去重后每个 PID 已归属其最新出现的批次;是否为最新批次 PID 直接看它的 intakeDate 是否 == latest
+    const inLatest = (d === latest);
+    p.isNew = inLatest && !prevSet.has(p.pid);   // 最新批次 且 上一批次没有 → 真新增
+  });
+  return dedupedList;
+}
+
+// 环比增速原始值:兼容 小数(1.4) 或 百分比串("140.00%"),统一转为小数;空/非法返回 null
+function wowDecimal(raw) {
+  if (raw === '' || raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  if (s === '') return null;
+  const isPct = s.endsWith('%');
+  const n = parseFloat(s.replace(/%\s*$/, ''));
+  if (isNaN(n)) return null;
+  return isPct ? n / 100 : n;
+}
+// 环比增速小数 → 百分比字符串,空值返回 ''
+function fmtWow(raw) {
+  const n = wowDecimal(raw);
+  if (n === null) return '';
+  const pct = Math.round(n * 1000) / 10; // 保留一位小数
+  return (pct > 0 ? '+' : '') + pct + '%';
+}
+
+// 把一批原始 CSV 行(对象数组)映射为标准商品对象,并做 PID 去重 + 按近7日单量排序。
+// 网站加载(下载 CSV)与管理员上传(解析上传的 CSV)共用同一套逻辑,保证一致。
+function mapRowsToProducts(rows) {
+  let list = rows.map(row => {
+    const g = k => pickField(row, k);
+    const gi = k => { const n = parseInt(String(g(k)).replace(/,/g, '').trim(), 10); return isNaN(n) ? 0 : n; };
+    const priceRaw = g('price');
+    const wowRaw = g('wow');
+    return {
+      dataDate: g('dataDate'),
+      intakeDate: normDate(g('intakeDate')) || g('intakeDate'),   // 入池日期(用于跨批次"本期新增"判定)
+      tag: g('tag'),                     // 商品标签:爆款/高潜/新品
+      country: g('country'),             // 原始国家
+      marketGroup: g('marketGroup'),     // 市场组
+      pid: g('pid'),                     // product_id
+      spuCode: g('spu'),                 // spu_code
+      shopId: g('shopId'),
+      shopCode: g('shopCode'),
+      store: g('shop'),                  // 店铺名称
+      skm: g('skm'),                     // SKM标签
+      category2: g('cat2'),
+      category3: g('cat3'),
+      leafCat: g('leafCat'),             // 叶子类目
+      catCombo: g('catCombo'),           // 类目组合
+      histSales: gi('histSales'),        // 历史累计支付子单量
+      histRange: g('histRange'),         // 历史累计销量区间
+      sales7: gi('sales7'),              // 近7日支付子单量(核心排序指标)
+      sales7Video: gi('sales7Video'),    // 近7天短视频
+      sales7Live: gi('sales7Live'),      // 近7天直播
+      sales7Shelf: gi('sales7Shelf'),    // 近7天货架
+      chPctVideo: gi('chPctVideo'),      // 场域_短视频占比(预计算)
+      chPctLive: gi('chPctLive'),        // 场域_直播占比(预计算)
+      chPctShelf: gi('chPctShelf'),      // 场域_货架占比(预计算)
+      range7: g('range7'),               // 近7天出单区间
+      cur3: gi('cur3'),                  // 近3天本期
+      prev3: gi('prev3'),                // 近3天上期
+      wowRaw: wowDecimal(wowRaw),        // 环比增速(小数)
+      wow: fmtWow(wowRaw),               // 环比增速(百分比串)
+      wowTag: g('wowTag'),               // 近3天环比标签
+      salesT1: gi('salesT1'),            // T-1支付子单量
+      rangeT1: g('rangeT1'),             // T-1出单区间
+      image: g('image'),                 // 首图,直接使用数据源原始链接
+      url: g('url'),                     // 商品详情页URL
+      uploadDate: g('listDate'),         // 全球首次上架日期
+      onlineDays: gi('onlineDays'),      // 上架天数
+      stock: gi('stock'),                // 实际可售库存
+      jitStock: gi('jitStock'),          // JIT虚拟库存
+      promoPrice: priceRaw ? ('$' + priceRaw) : '',   // 大盘营销价-美金
+      colorList: g('colors').split(',').map(s => s.trim()).filter(Boolean),
+      sizeList: g('sizes').split(',').map(s => s.trim()).filter(Boolean),
+      colorNum: gi('colorNum'),
+      sizeNum: gi('sizeNum'),
+      season: (function(v){ return ['NULL','#N/A','N/A','NONE','未知/未配置'].includes(String(v).trim().toUpperCase()) || String(v).trim()==='未知/未配置' ? '' : v; })(g('season')),
+      supplier: g('supplier'),           // 供应商名称
+      developer: g('developer'),         // 开发员名称
+      sps: pickSps(row),                 // SPS分(表头含 sps 即匹配,空则不展示)
+      isJit: (function(v){ const s = String(v).trim().toLowerCase(); return s.includes('jit') && !s.includes('非'); })(g('jit'))
+    };
+  }).filter(p => p.pid);
+  // 去重前:按入池日期批次收集各批次的 PID 全集(供"本期新增"差集判定用,去重后会丢失旧批次成员信息)
+  const batchPidSets = new Map();
+  for (const p of list) {
+    const d = (p.intakeDate || '').trim();
+    if (!d) continue;
+    if (!batchPidSets.has(d)) batchPidSets.set(d, new Set());
+    batchPidSets.get(d).add(p.pid);
+  }
+  // 按 PID 去重:同一 PID 优先保留「入池日期最新」的一条(见 dedupeByPid),保证卡片只出现一次且取最新批次指标
+  list = dedupeByPid(list);
+  // 默认按历史累计支付子单量降序;脱敏版无单量时,退化用「历史累计销量区间」下界排序,并赋予展示用排名
+  list.sort((a, b) => {
+    const av = a.histSales > 0 ? a.histSales : rangeWeight(a.histRange);
+    const bv = b.histSales > 0 ? b.histSales : rangeWeight(b.histRange);
+    return bv - av;
+  });
+  list.forEach((p, i) => { p.rank = i + 1; });
+  // 标注跨批次"本期新增"(差集口径:最新批次有、上一批次无);无入池日期列则整体降级
+  annotateNewBatch(list, batchPidSets);
+  return list;
+}
+
+// 方案A:全站唯一数据源就是仓库里的 data/products.csv,所有设备加载同一份。
+function loadProductData() {
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">加载商品数据...</div></div>';
+
+  // 依次尝试多个候选路径，兼容 CSV 被放到根目录(未放进 data/)的情况
+  var candidates = [];
+  if (SITE_CONFIG.dataFile) candidates.push(SITE_CONFIG.dataFile);
+  ['data/products.csv', 'products.csv'].forEach(function(p) {
+    if (candidates.indexOf(p) === -1) candidates.push(p);
+  });
+  tryLoadCsv(candidates, 0, grid);
+}
+
+// 逐个候选路径尝试加载 CSV；某个失败或解析为空时自动换下一个
+function tryLoadCsv(candidates, idx, grid) {
+  if (idx >= candidates.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x26A0;</div><div class="empty-state-text">数据加载失败，请刷新页面重试</div></div>';
+    return;
+  }
+  Papa.parse(candidates[idx] + (candidates[idx].indexOf('?') === -1 ? '?v=' : '&v=') + (window.DATA_VERSION || Date.now()), {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      var list = mapRowsToProducts(results.data || []);
+      if (!list.length) { tryLoadCsv(candidates, idx + 1, grid); return; }
+      MAIN_POOL = list;
+      PRODUCTS = MAIN_POOL;
+      ACTIVE_POOL = 'main';
+      try { window.__PRODUCTS_FOR_DIAG = PRODUCTS; } catch(e){}
+      filteredProducts = [...PRODUCTS];
+      initApp();
+    },
+    error: function() {
+      tryLoadCsv(candidates, idx + 1, grid);
+    }
+  });
+}
+
+// ===== Init App =====
+function initApp() {
+  buildFilterOptions();
+  renderTopicNav();
+  applyFilters();   // 走完整筛选+"本期新增置顶"排序,保证首屏就把最新批次新增品排在最前(直接 renderProducts 会漏掉置顶)
+  loadSettings();
+  updateCartCount();
+  updateWelcome();
+  maybePromptProfile();
+  // 深链:若 URL 带 #topic=xxx 后缀,加载完主数据后自动跳进对应专题池
+  applyHashRoute();
+  window.addEventListener('hashchange', applyHashRoute);
+}
+
+// 解析地址栏 hash 后缀并路由:#topic=<key> → 进入专题;#page=<tab> → 切换导航页;无/空 → 回主池
+function applyHashRoute() {
+  var h = location.hash || '';
+  var m = h.match(/topic=([A-Za-z0-9_-]+)/);
+  var key = m ? m[1] : '';
+  if (key && TOPIC_META[key]) {
+    if (ACTIVE_POOL !== 'topic') enterTopic(key);
+    return;
+  } else {
+    if (ACTIVE_POOL === 'topic') exitTopic();
+  }
+  // 页面 tab 深链:#page=cart / lookup / settings / buyers
+  var pm = h.match(/page=([A-Za-z0-9_-]+)/);
+  var pkey = pm ? pm[1] : '';
+  var validPages = { cart:1, lookup:1, settings:1, buyers:1, products:1 };
+  if (pkey && validPages[pkey] && !hashRouteInternal) {
+    hashRouteInternal = true;
+    switchPage(pkey);
+    hashRouteInternal = false;
+  }
+}
+var hashRouteInternal = false;
+
+// 首次进入(未填写机构信息)时,弹窗提醒用户先完善个人信息设置
+function maybePromptProfile() {
+  if (userSettings && userSettings.agencyName) return;  // 已填过机构,不再提醒
+  if (sessionStorage.getItem('profilePrompted') === '1') return; // 本次会话只提醒一次
+  sessionStorage.setItem('profilePrompted', '1');
+  setTimeout(function() {
+    var ok = window.confirm('欢迎来到运动品类选品小站！\n\n为方便后续一键导出申样记录，建议先完善「机构设置」中的个人信息（机构名称、达人、收件人等）。\n\n点击「确定」立即前往设置，点击「取消」先浏览商品。');
+    if (ok) switchPage('settings');
+  }, 600);
+}
+
+function buildSidebar() {
+  const container = document.getElementById('sidebarContainer');
+  const items = SITE_CONFIG.pallets.map(p => {
+    const cls = p.enabled ? (p.key === 'all' ? 'sidebar-item active' : 'sidebar-item') : 'sidebar-item disabled';
+    return `<div class="${cls}" onclick="${p.enabled ? `switchPallet('${p.key}')` : ''}"><span class="dot ${p.color}"></span>${p.name}</div>`;
+  }).join('');
+  container.innerHTML = `
+    <div class="sidebar-section">
+      <div class="sidebar-title">货盘</div>
+      ${items}
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title" style="opacity:0.5;">更多货盘即将上线</div>
+    </div>
+  `;
+}
+
+function updateWelcome() {
+  const name = userSettings.agencyName;
+  const el = document.getElementById('welcomeText');
+  el.textContent = name ? `Hi ${name}，欢迎来到运动品类选品小站` : 'Hi，欢迎来到运动品类选品小站';
+}
+
+// ===== Filters =====
+// 多选筛选器状态:field -> Set(已选值)。国家/买手/二级类目/三级类目 走多选。
+const MS_FIELDS = ['country', 'category2', 'category3', 'developer', 'tag'];
+const MS_STATE = { country: new Set(), category2: new Set(), category3: new Set(), developer: new Set(), tag: new Set() };
+const MS_WRAP_ID = { country: 'msCountry', category2: 'msCat2', category3: 'msCat3', developer: 'msDeveloper', tag: 'msTag' };
+const MS_CHECK_SVG = `<svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><path d="M1 6.5l3 3 7-7.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// 用给定选项渲染一个多选控件(触发按钮留在筛选栏内;面板挂到 body 顶层,避开筛选栏的 transform/overflow 裁剪)
+function buildMultiSelect(field, opts) {
+  const wrap = document.getElementById(MS_WRAP_ID[field]);
+  if (!wrap) return;
+  const label = wrap.getAttribute('data-label') || '';
+  const optsHtml = opts.map(o => {
+    const val = String(o);
+    const esc = val.replace(/"/g, '&quot;');
+    return `<div class="ms-opt" data-val="${esc}" onclick="msToggleOpt('${field}', this)"><span class="ms-box">${MS_CHECK_SVG}</span><span class="ms-txt" title="${esc}">${esc}</span></div>`;
+  }).join('');
+  // 触发按钮:留在筛选栏
+  wrap.innerHTML = `
+    <button type="button" class="ms-trigger" onclick="msTogglePanel('${field}', event)">
+      <span class="ms-label">${label}</span>
+    </button>`;
+  // 面板:挂到 body,fixed 定位不受祖先 transform/overflow 影响
+  const panelId = 'msPanel_' + field;
+  let panel = document.getElementById(panelId);
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = panelId;
+    panel.className = 'ms-panel';
+    panel.setAttribute('data-field', field);
+    panel.addEventListener('click', function(e){ e.stopPropagation(); });
+    document.body.appendChild(panel);
+  }
+  panel.innerHTML = `
+    <div class="ms-panel-head"><span class="ms-h-title">${label}(可多选)</span><button type="button" class="ms-clear" onclick="msClear('${field}')">清空</button></div>
+    ${optsHtml || '<div class="ms-opt" style="cursor:default;color:var(--text-tertiary)">无可选项</div>'}`;
+  msRefresh(field);
+}
+
+// 展开/收起某个面板(同时关闭其它面板);面板挂 body、fixed 定位
+function msTogglePanel(field, ev) {
+  if (ev) ev.stopPropagation();
+  const wasOpen = document.querySelector('.ms-panel.open[data-field="' + field + '"]');
+  msCloseAllPanels();
+  if (!wasOpen) {
+    const panel = document.getElementById('msPanel_' + field);
+    const wrap = document.getElementById(MS_WRAP_ID[field]);
+    if (panel && wrap) { panel.classList.add('open'); wrap.classList.add('open'); msPositionPanel(field); }
+  }
+}
+
+function msCloseAllPanels() {
+  document.querySelectorAll('.ms-panel.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.ms-wrap.open').forEach(w => w.classList.remove('open'));
+}
+
+// 依据触发按钮位置,把 fixed 面板定位到按钮正下方(下方空间不足则向上翻)
+function msPositionPanel(field) {
+  const wrap = document.getElementById(MS_WRAP_ID[field]);
+  const panel = document.getElementById('msPanel_' + field);
+  if (!wrap || !panel) return;
+  const trigger = wrap.querySelector('.ms-trigger');
+  if (!trigger) return;
+  const r = trigger.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const ph = panel.offsetHeight;
+  const pw = Math.max(panel.offsetWidth, r.width);
+  let left = r.left;
+  if (left + pw > vw - 8) left = Math.max(8, vw - 8 - pw); // 右侧溢出则左移
+  let top = r.bottom + 6;
+  if (top + ph > vh - 8 && r.top - 6 - ph > 8) top = r.top - 6 - ph; // 下方放不下且上方够 → 上翻
+  panel.style.left = left + 'px';
+  panel.style.top = top + 'px';
+}
+
+// 勾选/取消某个选项 → 更新状态 + 视觉 + 立即重新筛选
+function msToggleOpt(field, el) {
+  const val = el.getAttribute('data-val');
+  const set = MS_STATE[field];
+  if (set.has(val)) set.delete(val); else set.add(val);
+  msRefresh(field);
+  msPositionPanel(field); // 计数/文本变化可能改变按钮宽度,重新对齐
+  applyFilters();
+}
+
+// 清空某字段的全部选中
+function msClear(field) {
+  MS_STATE[field].clear();
+  msRefresh(field);
+  applyFilters();
+}
+
+// 根据状态刷新一个多选控件的所有视觉(打勾变色 / 行变色 / 触发按钮强提醒 / 计数)
+function msRefresh(field) {
+  const wrap = document.getElementById(MS_WRAP_ID[field]);
+  const panel = document.getElementById('msPanel_' + field);
+  if (!wrap) return;
+  const set = MS_STATE[field];
+  const label = wrap.getAttribute('data-label') || '';
+  if (panel) {
+    panel.querySelectorAll('.ms-opt').forEach(opt => {
+      const v = opt.getAttribute('data-val');
+      if (v !== null) opt.classList.toggle('sel', set.has(v));
+    });
+  }
+  wrap.classList.toggle('has-sel', set.size > 0);
+  const trigger = wrap.querySelector('.ms-trigger .ms-label');
+  const btn = wrap.querySelector('.ms-trigger');
+  if (trigger && btn) {
+    const oldCount = btn.querySelector('.ms-count');
+    if (oldCount) oldCount.remove();
+    if (set.size === 0) {
+      trigger.textContent = label;
+    } else if (set.size === 1) {
+      trigger.textContent = [...set][0];
+      btn.insertAdjacentHTML('beforeend', `<span class="ms-count">1</span>`);
+    } else {
+      trigger.textContent = label;
+      btn.insertAdjacentHTML('beforeend', `<span class="ms-count">${set.size}</span>`);
+    }
+  }
+}
+
+function buildFilterOptions() {
+  const countries = [...new Set(PRODUCTS.map(p => p.country))].filter(Boolean).sort();
+  const cat2s = [...new Set(PRODUCTS.map(p => p.category2))].filter(Boolean).sort();
+  const cat3s = [...new Set(PRODUCTS.map(p => p.category3))].filter(Boolean).sort();
+  const TAG_ORDER = ['爆款', '高潜', '新品'];
+  const tags = [...new Set(PRODUCTS.map(p => p.tag).filter(Boolean))].sort((a,b) => {
+    const ia = TAG_ORDER.indexOf(a), ib = TAG_ORDER.indexOf(b);
+    return (ia<0?99:ia) - (ib<0?99:ib) || a.localeCompare(b);
+  });
+  // 区间字段:按区间下界数值升序排序(如 (100,500] / (10000,+∞))
+  const rangeLower = s => { const m = String(s).match(/-?\d+(\.\d+)?/); return m ? parseFloat(m[0]) : Infinity; };
+  const rangeSort = arr => arr.sort((a,b) => rangeLower(a) - rangeLower(b) || String(a).localeCompare(String(b)));
+  const histRanges = rangeSort([...new Set(PRODUCTS.map(p => p.histRange).filter(Boolean))]);
+  const range7s = rangeSort([...new Set(PRODUCTS.map(p => p.range7).filter(Boolean))]);
+  const rangeT1s = rangeSort([...new Set(PRODUCTS.map(p => p.rangeT1).filter(Boolean))]);
+  // 买手 = 开发员名称
+  const developers = [...new Set(PRODUCTS.map(p => p.developer).filter(Boolean))].sort();
+  // 更新日期(数据源=入池日期),最新在前
+  const dataDates = [...new Set(PRODUCTS.map(p => (p.intakeDate||'').trim()).filter(Boolean))].sort((a,b) => String(b).localeCompare(String(a)));
+
+  buildMultiSelect('country', countries);
+  buildMultiSelect('category2', cat2s);
+  buildMultiSelect('category3', cat3s);
+  // 商品标签(数据源 D 列)多选:筛选项标题动态取当前池子里所有去重标签组合(如"爆品/高潜/新品")
+  const msTagWrap = document.getElementById('msTag');
+  if (msTagWrap) {
+    const dynLabel = tags.length ? tags.join('/') : '商品标签';
+    msTagWrap.setAttribute('data-label', dynLabel);
+  }
+  buildMultiSelect('tag', tags);
+  fillSelect('filterDataDate', dataDates, '更新日期');
+  fillRangeSelect('filterHistRange', histRanges, '历史累计销量');
+  fillRangeSelect('filterRange7', range7s, '近7天销量');
+  fillRangeSelect('filterRangeT1', rangeT1s, '昨日销量');
+  buildMultiSelect('developer', developers);
+  // 上架日期区间输入框:填充可选日期边界(min/max)
+  const uploadDates = PRODUCTS.map(p => p.uploadDate).filter(Boolean).map(normDate).filter(Boolean).sort();
+  if (uploadDates.length) {
+    const fFrom = document.getElementById('filterUploadFrom');
+    const fTo = document.getElementById('filterUploadTo');
+    if (fFrom) { fFrom.min = uploadDates[0]; fFrom.max = uploadDates[uploadDates.length-1]; }
+    if (fTo) { fTo.min = uploadDates[0]; fTo.max = uploadDates[uploadDates.length-1]; }
+  }
+}
+
+// 把各种日期串标准化成 YYYY-MM-DD(用于区间比较)
+function normDate(v) {
+  if (v == null) return '';
+  const s = String(v).trim();
+  if (!s) return '';
+  const m = s.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  if (m) return m[1] + '-' + String(m[2]).padStart(2,'0') + '-' + String(m[3]).padStart(2,'0');
+  return '';
+}
+
+function fillSelect(id, opts, label) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<option value="">${label}</option>` + opts.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
+// 区间字段专用:option 的 value 仍是原始区间串(用于筛选比对),显示文本走 rangeLabel 转成「XX-XX」
+function fillRangeSelect(id, opts, label) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<option value="">${label}</option>` + opts.map(o => {
+    const disp = rangeLabel(o).replace(/[「」]/g, '') || o;
+    return `<option value="${o}">${disp}</option>`;
+  }).join('');
+}
+
+function toggleAdvancedFilter() {
+  // 「更多筛选」已取消,两行筛选默认全部展示;此函数保留为空以兼容历史调用
+  const adv = document.getElementById('filterAdvanced');
+  if (adv) adv.classList.add('show');
+}
+
+function toggleFilterBar() {
+  const head = document.querySelector('.frozen-head');
+  const hidden = head.classList.toggle('filterbar-hidden');
+  const label = document.querySelector('#filterBarToggle .fbt-label');
+  if (label) label.textContent = hidden ? '显示搜索栏' : '隐藏搜索栏';
+}
+
+function parsePrice(str) {
+  if (!str) return 0;
+  return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+}
+
+function applyFilters() {
+  const q = document.getElementById('filterSearch').value.toLowerCase().trim();
+  // 批量查询:按空格/英文逗号/中文逗号/顿号/分号/换行拆成多个关键词,任意一个命中即算匹配(并集语义,支持一次粘贴多个 PID/SPU)
+  const qTerms = q ? q.split(/[\s,，、;；\n\r]+/).filter(Boolean) : [];
+  // 国家/二级类目/三级类目/买手 = 多选(Set),空 Set 表示不限
+  const countrySet = MS_STATE.country;
+  const cat2Set = MS_STATE.category2;
+  const cat3Set = MS_STATE.category3;
+  const developerSet = MS_STATE.developer;
+  const tagSet = MS_STATE.tag;
+  const uploadFrom = normDate(document.getElementById('filterUploadFrom').value);
+  const uploadTo = normDate(document.getElementById('filterUploadTo').value);
+  const spsMinRaw = document.getElementById('filterSpsMin').value;
+  const spsMaxRaw = document.getElementById('filterSpsMax').value;
+  // 单侧筛选:只填下限或只填上限均可生效;空或非法值退化为无界
+  const spsMinN = parseFloat(spsMinRaw);
+  const spsMaxN = parseFloat(spsMaxRaw);
+  const spsMin = (spsMinRaw.trim() === '' || isNaN(spsMinN)) ? -Infinity : spsMinN;
+  const spsMax = (spsMaxRaw.trim() === '' || isNaN(spsMaxN)) ? Infinity : spsMaxN;
+  const priceMinRaw = document.getElementById('filterPriceMin').value;
+  const priceMaxRaw = document.getElementById('filterPriceMax').value;
+  const priceMinN = parseFloat(priceMinRaw);
+  const priceMaxN = parseFloat(priceMaxRaw);
+  const priceMin = (priceMinRaw.trim() === '' || isNaN(priceMinN)) ? -Infinity : priceMinN;
+  const priceMax = (priceMaxRaw.trim() === '' || isNaN(priceMaxN)) ? Infinity : priceMaxN;
+  const histRange = document.getElementById('filterHistRange').value;
+  const range7 = document.getElementById('filterRange7').value;
+  const rangeT1 = document.getElementById('filterRangeT1').value;
+  const dataDate = document.getElementById('filterDataDate').value;
+  const newFilter = (document.getElementById('filterNew') || {}).value || '';
+  const sort = document.getElementById('filterSort').value;
+
+  currentPage = 1;
+  filteredProducts = PRODUCTS.filter(p => {
+    if (qTerms.length) {
+      const hay = (p.pid + '\n' + p.spuCode.toLowerCase() + '\n' + (p.store||'').toLowerCase() + '\n' + (p.supplier||'').toLowerCase() + '\n' + (p.developer||'').toLowerCase());
+      if (!qTerms.some(t => hay.includes(t))) return false;
+    }
+    if (countrySet.size && !countrySet.has(p.country)) return false;
+    if (cat3Set.size && !cat3Set.has(p.category3)) return false;
+    if (cat2Set.size && !cat2Set.has(p.category2)) return false;
+    if (developerSet.size && !developerSet.has(p.developer)) return false;
+    if (tagSet.size && !tagSet.has(p.tag)) return false;
+    if (newFilter === 'yes' && !p.isNew) return false;
+    if (newFilter === 'no' && p.isNew) return false;
+    if (uploadFrom || uploadTo) {
+      const d = normDate(p.uploadDate);
+      if (!d) return false;
+      if (uploadFrom && d < uploadFrom) return false;
+      if (uploadTo && d > uploadTo) return false;
+    }
+    if (spsMin !== -Infinity || spsMax !== Infinity) {
+      const sv = parseFloat(p.sps);
+      if (isNaN(sv)) return false;
+      if (sv < spsMin || sv > spsMax) return false;
+    }
+    if (priceMin !== -Infinity || priceMax !== Infinity) {
+      const pv = parsePrice(p.promoPrice);
+      if (!pv) return false;
+      if (pv < priceMin || pv > priceMax) return false;
+    }
+    if (histRange && p.histRange !== histRange) return false;
+    if (range7 && p.range7 !== range7) return false;
+    if (rangeT1 && p.rangeT1 !== rangeT1) return false;
+    if (dataDate && p.intakeDate !== dataDate) return false;
+    return true;
+  });
+
+  const hasIntake = !!(PRODUCTS && PRODUCTS.__hasIntake);
+  const latestBatch = (PRODUCTS && PRODUCTS.__latestBatch) || '';
+  // 方案B + 三层分层:默认排序(histDesc)下按"入池批次新旧 + 最新批次内新增优先"分层。
+  //   第1层:最新批次 且 相对上一批真新增(isNew)      —— 最顶
+  //   第2层:最新批次 但 历史出现过(非新增)
+  //   第3层及以后:更早批次,按入池日期降序细分
+  //   各层内按历史累计单量降序。
+  // 用户主动切换排序(价格/近7天/环比/上架时间等)时,退回全局排序,不分层,但仍把真新增整体置顶。
+  const layered = hasIntake && sort === 'histDesc';
+  // 分层排序键:数值越小越靠前。最新批次内 isNew=0 / 非新增=1;更早批次统一从 2 起、按入池日期越新越小。
+  const tierKey = p => {
+    const d = (p.intakeDate||'').trim();
+    if (d === latestBatch) return p.isNew ? '0' : '1';
+    // 更早批次:用 "2" + (反转的日期串) 保证越新越靠前;简单用负向比较放到 compare 里处理
+    return '2';
+  };
+
+  filteredProducts.sort((a,b) => {
+    if (layered) {
+      const ta = tierKey(a), tb = tierKey(b);
+      if (ta !== tb) return ta < tb ? -1 : 1;            // 层级:0(新增) < 1(最新非新增) < 2(更早)
+      if (ta === '2') {                                   // 同为"更早批次":按入池日期降序细分
+        const ka = (a.intakeDate||'').trim(), kb = (b.intakeDate||'').trim();
+        if (ka !== kb) return kb.localeCompare(ka);
+      }
+      return b.histSales - a.histSales;                   // 层内:历史累计单量降序
+    }
+    switch(sort) {
+      case 'priceAsc': return parsePrice(a.promoPrice) - parsePrice(b.promoPrice);
+      case 'priceDesc': return parsePrice(b.promoPrice) - parsePrice(a.promoPrice);
+      case 'dateDesc': return (normDate(b.uploadDate)||'').localeCompare(normDate(a.uploadDate)||'');
+      case 'sales7': return b.sales7 - a.sales7;
+      case 'sales7Asc': return a.sales7 - b.sales7;
+      case 'wowDesc': return (b.wowRaw==null?-Infinity:b.wowRaw) - (a.wowRaw==null?-Infinity:a.wowRaw);
+      case 'histAsc': return a.histSales - b.histSales;
+      case 'histDesc':
+      default: return b.histSales - a.histSales;
+    }
+  });
+
+  // 本期新增置顶:仅在"未分层"(用户主动切换了排序)时需要,把 isNew 整体提到最前;稳定排序保留组内既有次序。
+  // 分层模式下最新批次已在段首,无需再置顶(执行也是无害的稳定 no-op,这里直接跳过省一次排序)。
+  if (hasIntake && !layered) {
+    filteredProducts = filteredProducts
+      .map((p, i) => ({ p, i }))
+      .sort((x, y) => ((y.p.isNew ? 1 : 0) - (x.p.isNew ? 1 : 0)) || (x.i - y.i))
+      .map(o => o.p);
+  }
+
+  renderProducts();
+  document.getElementById('filterStats').textContent = `显示 ${filteredProducts.length} / ${PRODUCTS.length} 件商品`;
+}
+
+function resetFilters() {
+  ['filterSearch','filterUploadFrom','filterUploadTo','filterSpsMin','filterSpsMax','filterPriceMin','filterPriceMax','filterDataDate','filterHistRange','filterRange7','filterRangeT1','filterNew'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // 清空所有多选状态并刷新视觉
+  MS_FIELDS.forEach(f => { MS_STATE[f].clear(); msRefresh(f); });
+  document.getElementById('filterSort').value = 'histDesc';
+  currentPage = 1;
+  filteredProducts = [...PRODUCTS];
+  renderProducts();
+  document.getElementById('filterStats').textContent = '';
+}
+
+// ===== Pages =====
+// 用稳定的 onclick 特征而非下标来定位 Tab,避免「立即申样」<a> 挤乱索引
+function setActiveTab(matchFn) {
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    const oc = (t.getAttribute('onclick') || '') + '|' + (t.id || '');
+    t.classList.toggle('active', matchFn(oc, t));
+  });
+}
+
+function switchPage(page) {
+  document.getElementById('productsPage').classList.toggle('hidden', page !== 'products');
+  document.getElementById('lookupPage').classList.toggle('active', page === 'lookup');
+  document.getElementById('cartPage').classList.toggle('active', page === 'cart');
+  document.getElementById('settingsPage').classList.toggle('active', page === 'settings');
+  var buyersEl = document.getElementById('buyersPage');
+  if (buyersEl) buyersEl.classList.toggle('active', page === 'buyers');
+  document.getElementById('cartBottomBar').classList.toggle('active', page === 'cart' && cart.length > 0);
+  // 切到普通页时,若当前处于专题池则先切回大池子
+  if (page === 'products' && ACTIVE_POOL !== 'main') { exitTopic(true); }
+  setActiveTab(function(oc){ return oc.indexOf("switchPage('" + page + "')") !== -1; });
+  if (page === 'cart') renderCart();
+  if (page === 'lookup') initLookup();
+  if (page === 'buyers') renderBuyers();
+  updateFloatButtons();
+  // 写入地址栏 hash 后缀(便于分享/回退,并让 GA4 能按 tab 统计)
+  updatePageHash(page);
+  trackTabView(page);
+}
+
+// 各页对应的 URL 后缀 与 GA4 虚拟页标题
+var PAGE_HASH = { products:'', cart:'cart', lookup:'lookup', settings:'settings', buyers:'buyers' };
+var PAGE_TITLE = { products:'商品浏览', cart:'圈品池', lookup:'SPU-PID互查', settings:'机构设置', buyers:'联系买手' };
+
+// 更新地址栏 #page=xxx,但不覆盖已有的 #topic=xxx(专题深链优先)
+function updatePageHash(page) {
+  if ((location.hash || '').indexOf('topic=') !== -1) return;
+  var suffix = PAGE_HASH[page];
+  var newHash = suffix ? ('#page=' + suffix) : '';
+  if (newHash) { if (location.hash !== newHash) history.replaceState(null, '', newHash); }
+  else if (location.hash) { history.replaceState(null, '', location.pathname + location.search); }
+}
+
+// 向 GA4 上报一次"虚拟页面浏览"(SPA hash 切换不会自动触发 page_view)
+function trackTabView(page) {
+  if (typeof gtag !== 'function') return;
+  var suffix = PAGE_HASH[page] || 'products';
+  var title = PAGE_TITLE[page] || page;
+  gtag('event', 'page_view', {
+    page_title: '运动选品小站 - ' + title,
+    page_location: location.origin + location.pathname + (suffix ? ('#page=' + suffix) : ''),
+    page_path: location.pathname + (suffix ? ('#page=' + suffix) : ''),
+    tab_name: title
+  });
+}
+
+// ===== 强推荐专题:跑步鞋精选 =====
+// 复用同一套筛选/排序/渲染引擎,只切换当前生效的数据池(PRODUCTS)
+const TOPIC_META = {
+  running: { file: 'data/topic_running.csv', title: '跑步鞋精选', sub: '运动爆品专题 · 精选好货', strong: true }
+};
+// 专题导航条渲染顺序;数组里的 key 必须存在于 TOPIC_META
+const TOPIC_ORDER = ['running'];
+// 预留占位专题数量(展示为灰色 dashed chip,暂不可点)
+// 预留位数量:暂设为 0 → 对外页面不展示"专题N(预留)"占位;
+// 将来有新专题数据时,把它改回 3(或对应数量)即可重新露出预留位。
+const TOPIC_RESERVED = 0;
+
+// 渲染专题导航条:强展示资源位 + 预留位
+function renderTopicNav() {
+  const box = document.getElementById('topicNavItems');
+  if (!box) return;
+  let html = TOPIC_ORDER.map(function(key){
+    const meta = TOPIC_META[key];
+    if (!meta) return '';
+    const cls = 'topic-chip' + (meta.strong ? ' strong' : '');
+    const fire = meta.strong ? '<span class="tc-fire">🔥</span>' : '';
+    return '<div class="' + cls + '" data-topic="' + key + '" onclick="enterTopic(\'' + key + '\')">' + fire + meta.title + '</div>';
+  }).join('');
+  for (let i = 0; i < TOPIC_RESERVED; i++) {
+    html += '<div class="topic-chip reserved" title="专题位预留中,敬请期待">专题' + (i + 1) + '(预留)</div>';
+  }
+  box.innerHTML = html;
+  updateTopicNavActive();
+}
+
+// 同步专题导航条 chip 的高亮态:当前处于某专题池时高亮对应 chip
+function updateTopicNavActive() {
+  const box = document.getElementById('topicNavItems');
+  if (!box) return;
+  const activeKey = (ACTIVE_POOL === 'topic') ? CURRENT_TOPIC_KEY : '';
+  box.querySelectorAll('.topic-chip[data-topic]').forEach(function(c){
+    c.classList.toggle('active', c.getAttribute('data-topic') === activeKey);
+  });
+}
+let CURRENT_TOPIC_KEY = '';
+
+function enterTopic(key) {
+  const meta = TOPIC_META[key];
+  if (!meta) return;
+  // 进入商品浏览页容器
+  document.getElementById('productsPage').classList.remove('hidden');
+  document.getElementById('lookupPage').classList.remove('active');
+  document.getElementById('cartPage').classList.remove('active');
+  document.getElementById('settingsPage').classList.remove('active');
+  document.getElementById('cartBottomBar').classList.remove('active');
+  // 顶部功能 Tab 全部取消高亮(专题入口已移到专题导航条)
+  setActiveTab(function(){ return false; });
+  CURRENT_TOPIC_KEY = key;
+
+  // 同步地址栏后缀,便于复制/分享"直达专题"链接(如 #topic=running)
+  try { if (('#topic=' + key) !== location.hash) history.replaceState(null, '', '#topic=' + key); } catch(e){}
+
+  const applyTopic = function() {
+    PRODUCTS = TOPIC_POOL;
+    ACTIVE_POOL = 'topic';
+    try { window.__PRODUCTS_FOR_DIAG = PRODUCTS; } catch(e){}
+    updateTopicNavActive();
+    // 展示返回条 + 专题标题
+    const banner = document.getElementById('topicBanner');
+    document.getElementById('topicBannerTitle').textContent = meta.title;
+    document.getElementById('topicBannerSub').textContent = meta.sub + ' · 共 ' + PRODUCTS.length + ' 款';
+    banner.classList.add('show');
+    document.getElementById('navWelcome') && (document.getElementById('navWelcome').style.display = 'none');
+    const fbp = document.getElementById('floatBackPool'); if (fbp) fbp.classList.add('show');
+    // 重建筛选项(反映小池子)并从头渲染
+    resetFilters();
+    // 专题「跑步鞋精选」默认排序:按上架日期从新到旧(区别于主推池的按入池批次分层)
+    var sortSel = document.getElementById('filterSort');
+    if (sortSel && key === 'running') sortSel.value = 'dateDesc';
+    buildFilterOptions();
+    applyFilters();
+    const sa = document.getElementById('scrollArea'); if (sa) sa.scrollTop = 0;
+    updateFloatButtons();
+  };
+
+  if (TOPIC_POOL) { applyTopic(); return; }
+  // 懒加载专题 CSV(与主数据同一套字段映射)
+  const grid = document.getElementById('productGrid');
+  grid.className = '';
+  grid.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">加载专题货盘...</div></div>';
+  Papa.parse(meta.file + '?v=' + (window.DATA_VERSION || Date.now()), {
+    download: true, header: true, skipEmptyLines: true,
+    complete: function(results) {
+      const list = mapRowsToProducts(results.data || []);
+      if (!list.length) { grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x26A0;</div><div class="empty-state-text">专题数据加载失败,请刷新重试</div></div>'; return; }
+      TOPIC_POOL = list;
+      applyTopic();
+    },
+    error: function() {
+      grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x26A0;</div><div class="empty-state-text">专题数据加载失败,请刷新重试</div></div>';
+    }
+  });
+}
+
+// 返回大池子;silent=true 时仅切换数据不重复设置 Tab(供 switchPage 调用)
+function exitTopic(silent) {
+  PRODUCTS = MAIN_POOL;
+  ACTIVE_POOL = 'main';
+  CURRENT_TOPIC_KEY = '';
+  updateTopicNavActive();
+  try { window.__PRODUCTS_FOR_DIAG = PRODUCTS; } catch(e){}
+  // 清除地址栏专题后缀,回到主商品池 URL
+  try { if (location.hash) history.replaceState(null, '', location.pathname + location.search); } catch(e){}
+  document.getElementById('topicBanner').classList.remove('show');
+  const nw = document.getElementById('navWelcome'); if (nw) nw.style.display = '';
+  const fbp = document.getElementById('floatBackPool'); if (fbp) fbp.classList.remove('show');
+  resetFilters();
+  buildFilterOptions();
+  applyFilters();
+  const sa = document.getElementById('scrollArea'); if (sa) sa.scrollTop = 0;
+  if (!silent) {
+    setActiveTab(function(oc){ return oc.indexOf("switchPage('products')") !== -1; });
+  }
+  updateFloatButtons();
+}
+
+function switchPallet(type) {
+  if (type !== 'all') { showToast('该货盘即将上线，敬请期待'); return; }
+}
+
+// ===== Products =====
+// A列(新老品标签)颜色映射:兼容任意文本
+// 1) 已知关键词优先给固定语义色;2) 其它任意文本按哈希落到通用调色板,保证稳定且可区分。
+function tagClass(tag) {
+  const t = (tag || '').trim();
+  if (!t) return 'told';
+  // 已知关键词(大小写/中英文均兼容),命中即用语义色
+  if (/7\s*天|7\s*day|7d\b/i.test(t)) return 't7';
+  if (/14\s*天|14\s*day|14d\b/i.test(t)) return 't14';
+  if (/45\s*天|45\s*day|45d\b/i.test(t)) return 't45';
+  if (/爆款|hot|best\s*sell/i.test(t)) return 't7';
+  if (/高潜|potential|rising/i.test(t)) return 't14';
+  if (/新品|new/i.test(t)) return 't45';
+  if (/老品|old|经典|常青|clearance/i.test(t)) return 'told';
+  // 未知文本:哈希到 8 色通用调色板(同一文本永远同色)
+  let h = 0;
+  for (let i = 0; i < t.length; i++) { h = (h * 31 + t.charCodeAt(i)) >>> 0; }
+  return 'tp' + (h % 8);
+}
+
+// ===== 商品图片:兼容 + 稳定加载 =====
+// 字节/TikTok 图床(ibyteimg / tiktokcdn)的链接常见两类问题:
+//  1) 防盗链:带 Referer 会被 CDN 判 403 → 用 referrerpolicy="no-referrer" 规避;
+//  2) ~tplv 模板变体偶发不存在/超时 → onerror 逐级回退到其它模板尺寸,最后回退去掉模板取原图。
+// 生成一组候选 URL(从原始链接派生),按顺序尝试。
+function imageCandidates(raw) {
+  const url = (raw || '').trim();
+  if (!url) return [];
+  const cands = [url];
+  const tplvIdx = url.indexOf('~tplv');
+  if (tplvIdx > -1) {
+    const base = url.slice(0, tplvIdx);              // 到 ~tplv 之前
+    const afterQ = url.indexOf('?', tplvIdx);
+    const query = afterQ > -1 ? url.slice(afterQ) : '';
+    const token = base.replace(/\/$/, '');           // 资源 token 前缀
+    // 尝试从模板里取出 tplv 前缀名(如 tplv-o3syd03w52),拼常见 resize 尺寸
+    const m = url.slice(tplvIdx).match(/~tplv-([a-z0-9]+)-/i);
+    const pfx = m ? m[1] : '';
+    if (pfx) {
+      cands.push(`${token}~tplv-${pfx}-resize-jpeg:800:800.image${query}`);
+      cands.push(`${token}~tplv-${pfx}-resize-jpeg:600:600.image${query}`);
+      cands.push(`${token}~tplv-${pfx}-resize:800:800.image${query}`);
+      cands.push(`${token}~tplv-${pfx}.image${query}`);
+    }
+    // 最后回退:去掉模板与 query,取资源原图
+    cands.push(`${token}.image`);
+    cands.push(token);
+  }
+  // 去重、保序
+  return cands.filter((v, i) => v && cands.indexOf(v) === i);
+}
+
+// onerror 处理:沿候选链尝试下一个;全部失败则显示占位。
+// 用 data-cands(JSON) + data-ci(当前索引)记录状态。
+function onImgError(img) {
+  try {
+    let cands = [];
+    try { cands = JSON.parse(img.getAttribute('data-cands') || '[]'); } catch (e) {}
+    let ci = parseInt(img.getAttribute('data-ci') || '0', 10);
+    ci += 1;
+    if (cands && ci < cands.length) {
+      img.setAttribute('data-ci', String(ci));
+      img.src = cands[ci];
+      return;
+    }
+  } catch (e) {}
+  // 彻底失败:占位(不再触发 onerror)
+  img.onerror = null;
+  img.removeAttribute('src');
+  img.classList.add('img-fallback');
+  const wrap = img.parentNode;
+  if (wrap && !wrap.querySelector('.img-fallback-tip')) {
+    const tip = document.createElement('div');
+    tip.className = 'img-fallback-tip';
+    tip.textContent = '图片暂不可用';
+    wrap.appendChild(tip);
+  }
+}
+
+// 生成 <img> 标签(带候选链、no-referrer、懒加载)
+function productImgTag(cls, raw) {
+  const cands = imageCandidates(raw);
+  const first = cands[0] || '';
+  const cJson = JSON.stringify(cands).replace(/"/g, '&quot;');
+  return `<img class="${cls}" src="${first}" data-cands="${cJson}" data-ci="0" `
+       + `referrerpolicy="no-referrer" loading="lazy" decoding="async" `
+       + `onerror="onImgError(this)">`;
+}
+// ===== 商品渲染:一页到底 + 滚动到底自动加载更多(无分页) =====
+let renderedCount = 0;               // 当前已渲染数量
+const RENDER_CHUNK = 60;             // 每次追加的数量
+let _scrollBound = false;            // 滚动监听是否已绑定
+
+// 英文色名 → 色值映射(用于卡面颜色小圆点)。键统一小写。
+const COLOR_NAME_MAP = {
+  'black':'#111111','white':'#ffffff','red':'#e0201b','green':'#2e8b30','blue':'#2f6fe0',
+  'yellow':'#f4c518','orange':'#f57c1f','purple':'#8e44ad','pink':'#ff7eb3','gray':'#9aa0a6',
+  'grey':'#9aa0a6','brown':'#8b5a2b','beige':'#e6d3a3','navy':'#1f2a56','khaki':'#c3b091',
+  'gold':'#d4af37','silver':'#c0c0c0','ivory':'#fffff0','cream':'#f5efdc','apricot':'#f4b57e',
+  'burgundy':'#800020','wine':'#722f37','maroon':'#800000','coffee':'#6f4e37','camel':'#c19a6b',
+  'olive':'#808000','army green':'#4b5320','armygreen':'#4b5320','light blue':'#add8e6',
+  'lightblue':'#add8e6','sky blue':'#87ceeb','dark blue':'#00008b','light green':'#90ee90',
+  'dark green':'#006400','light gray':'#d3d3d3','dark gray':'#555555','rose':'#ff66a1',
+  'coral':'#ff7f50','peach':'#ffcba4','mint':'#98ff98','teal':'#008080','turquoise':'#40e0d0',
+  'lavender':'#b57edc','violet':'#7f00ff','magenta':'#ff00ff','cyan':'#00bcd4','tan':'#d2b48c',
+  'nude':'#e3bc9a','champagne':'#f7e7ce','mustard':'#e1ad01','lime':'#bfff00','indigo':'#4b0082',
+  'chocolate':'#7b3f00','sand':'#e0cda9','stone':'#a8a196','charcoal':'#36454f','dark red':'#8b0000',
+  'light pink':'#ffd1dc','hot pink':'#ff69b4','fuchsia':'#ff2d95','emerald':'#50c878',
+  'jade':'#00a86b','denim':'#3b5b92','multicolor':'linear-gradient(90deg,#e0201b,#f4c518,#2f6fe0)',
+  'multi':'linear-gradient(90deg,#e0201b,#f4c518,#2f6fe0)'
+};
+// 英文色名 → 中文(用于弹窗可点击颜色的展示)。映射不到则保留英文原文。键统一小写。
+const COLOR_CN_MAP = {
+  'black':'黑色','white':'白色','red':'红色','green':'绿色','blue':'蓝色','yellow':'黄色',
+  'orange':'橙色','purple':'紫色','pink':'粉色','gray':'灰色','grey':'灰色','brown':'棕色',
+  'beige':'米色','navy':'藏青','khaki':'卡其','gold':'金色','silver':'银色','ivory':'象牙白',
+  'cream':'奶油色','apricot':'杏色','burgundy':'酒红','wine':'酒红','maroon':'栗色',
+  'coffee':'咖啡色','camel':'驼色','olive':'橄榄绿','army green':'军绿','armygreen':'军绿',
+  'light blue':'浅蓝','lightblue':'浅蓝','sky blue':'天蓝','skyblue':'天蓝','dark blue':'深蓝',
+  'darkblue':'深蓝','light green':'浅绿','lightgreen':'浅绿','dark green':'深绿','darkgreen':'深绿',
+  'light gray':'浅灰','lightgray':'浅灰','light grey':'浅灰','dark gray':'深灰','darkgray':'深灰',
+  'dark grey':'深灰','rose':'玫瑰色','coral':'珊瑚色','peach':'蜜桃色','mint':'薄荷绿',
+  'teal':'蓝绿色','turquoise':'松石绿','lavender':'薰衣草紫','violet':'紫罗兰','magenta':'品红',
+  'cyan':'青色','tan':'棕褐色','nude':'裸色','champagne':'香槟色','mustard':'芥末黄','lime':'青柠色',
+  'indigo':'靛蓝','chocolate':'巧克力色','sand':'沙色','stone':'石灰色','charcoal':'炭灰色',
+  'dark red':'深红','darkred':'深红','light pink':'浅粉','lightpink':'浅粉','hot pink':'亮粉',
+  'hotpink':'亮粉','fuchsia':'紫红','emerald':'祖母绿','jade':'翡翠绿','denim':'牛仔蓝',
+  'multicolor':'多色','multi':'多色','caramel':'焦糖色','mocha':'摩卡色','taupe':'灰褐色',
+  'lilac':'丁香紫','plum':'李子色','salmon':'鲑鱼色','aqua':'水蓝色','azure':'蔚蓝色',
+  'ochre':'赭石色','terracotta':'陶土色','rust':'铁锈色','copper':'铜色','bronze':'古铜色',
+  'sage':'鼠尾草绿','forest green':'森林绿','forestgreen':'森林绿','pastel':'柔和色','ecru':'本白色',
+  'golden':'金色','chartreuse':'黄绿色','mulberry':'桑葚色','curry':'咖喱色','fawn':'鹿棕色',
+  'multi-color':'多色','multi color':'多色','black and white':'黑白色','jet black':'纯黑色',
+  'off white':'米白色','offwhite':'米白色','royal blue':'宝蓝色','navy blue':'藏青色',
+  'light wash':'浅水洗','dark wash':'深水洗','medium wash':'中水洗','wash':'水洗色',
+  'mauve':'木槿紫','pebble':'卵石色','flame red':'火焰红','lemon yellow':'柠檬黄',
+  'denim blue':'牛仔蓝','charcoal gray':'炭灰色','charcoal grey':'炭灰色','emerald green':'祖母绿',
+  'mint green':'薄荷绿','rust red':'铁锈红','wine red':'酒红色','army green':'军绿色','avocado green':'牛油果绿',
+  'olive green':'橄榄绿','forest green':'森林绿','sage green':'鼠尾草绿','moss green':'苔藓绿',
+  'coffee brown':'咖啡棕','apricot brown':'杏棕色','rose red':'玫红色','rose pink':'玫粉色',
+  'baby pink':'浅粉色','baby blue':'浅蓝色','jade green':'翡翠绿','coral red':'珊瑚红'
+};
+// 常见英文色名词根 → 中文,用于兜底逐词拼「中文+色」
+const COLOR_ROOT_MAP = {
+  'caramel':'焦糖','mocha':'摩卡','taupe':'灰褐','lilac':'丁香','plum':'李子','salmon':'鲑鱼',
+  'aqua':'水蓝','azure':'蔚蓝','ochre':'赭石','terracotta':'陶土','rust':'铁锈','copper':'铜',
+  'bronze':'古铜','sage':'鼠尾草','ecru':'本白','mauve':'木槿紫','cerulean':'蔚蓝','amber':'琥珀',
+  'ruby':'宝石红','sapphire':'宝蓝','pearl':'珍珠','smoke':'烟','ash':'烟灰','slate':'石板',
+  'lemon':'柠檬','cherry':'樱桃','grape':'葡萄','berry':'莓','honey':'蜂蜜','latte':'拿铁',
+  'dusty':'灰调','off':'柔','deep':'深','light':'浅','dark':'深','bright':'亮','pale':'淡',
+  'baby':'浅','hot':'亮','neon':'荧光','pastel':'柔','vintage':'复古','soft':'柔','warm':'暖',
+  'cool':'冷','nude':'裸','sand':'沙','stone':'石','cloud':'云','fog':'雾','sky':'天','sea':'海',
+  'ocean':'海','forest':'森林','army':'军','olive':'橄榄','moss':'苔','mint':'薄荷','emerald':'祖母绿',
+  'jade':'翡翠','navy':'藏青','denim':'牛仔','teal':'蓝绿','turquoise':'松石','indigo':'靛','violet':'紫罗兰',
+  'lavender':'薰衣草','magenta':'品红','fuchsia':'紫红','rose':'玫瑰','coral':'珊瑚','peach':'蜜桃',
+  'apricot':'杏','champagne':'香槟','mustard':'芥末','khaki':'卡其','beige':'米','cream':'奶油',
+  'ivory':'象牙','coffee':'咖啡','chocolate':'巧克力','wine':'酒红','burgundy':'酒红','maroon':'栗',
+  'charcoal':'炭','silver':'银','gold':'金','tan':'棕褐','camel':'驼',
+  // 基础色词(作为词组末词兜底)
+  'black':'黑','white':'白','red':'红','green':'绿','blue':'蓝','yellow':'黄','orange':'橙',
+  'purple':'紫','pink':'粉','gray':'灰','grey':'灰','brown':'棕'
+};
+// 把英文色名翻成中文;精确映射优先,其次逐词翻译拼「中文+色」,确保永远输出中文
+function colorToCn(name) {
+  const raw = String(name || '').trim();
+  if (!raw) return name;
+  const key = raw.toLowerCase();
+  if (COLOR_CN_MAP[key]) return COLOR_CN_MAP[key];
+  if (!/[a-z]/i.test(raw)) return raw; // 已是纯中文/纯符号
+
+  // 修饰词(深浅冷暖等)→ 中文前缀,不带"色"
+  const MOD = { 'deep':'深','dark':'深','light':'浅','pale':'淡','bright':'亮','baby':'浅','hot':'亮','soft':'柔','warm':'暖','cool':'冷','neon':'荧光','pastel':'柔','vintage':'复古','dusty':'灰调','off':'柔' };
+  // 单位/连接词(组合款可读)
+  const UNIT = { 'pieces':'件','piece':'件','pcs':'件','pc':'件','set':'套','sets':'套','and':'和','with':'配','pieces）':'件' };
+  // 基础/复合颜色词典(去掉尾"色",拼装时按需补)
+  const baseCn = w => {
+    const lw = w.toLowerCase();
+    if (COLOR_CN_MAP[lw]) return COLOR_CN_MAP[lw];
+    if (COLOR_ROOT_MAP[lw]) { const r = COLOR_ROOT_MAP[lw]; return /[色绿红蓝紫黄白黑灰棕粉青]$/.test(r) ? r : r + '色'; }
+    return null;
+  };
+
+  // 清洗:去掉款号/编号噪声
+  let cleaned = raw
+    .replace(/\b[0-9]+\s*#\s*[0-9]*/g, ' ')
+    .replace(/#\s*[0-9]+/g, ' ')
+    .replace(/\bRS?\s*[0-9]{2,}\b/gi, ' ')
+    .replace(/\b[0-9]{3,}\b/g, ' ');
+
+  // 分词(保留 + / * , & 作为组合分隔)
+  const rawTokens = cleaned.split(/([+*,&]|\bplus\b)/i);
+  const groups = rawTokens.filter(t => t !== undefined);
+  let out = [];
+  let anyColor = false;
+
+  const translateChunk = (chunk) => {
+    const words = chunk.split(/[\s\-_/()（）·]+/).filter(Boolean);
+    let segStr = '';
+    let pendingMod = '';
+    let localHit = false;
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      const lw = w.toLowerCase();
+      // 双词颜色(dark blue / army green / navy blue …)
+      if (i + 1 < words.length) {
+        const pairKey = (lw + ' ' + words[i+1].toLowerCase());
+        if (COLOR_CN_MAP[pairKey]) { segStr += (pendingMod) + COLOR_CN_MAP[pairKey]; pendingMod=''; localHit = true; anyColor = true; i++; continue; }
+      }
+      if (MOD[lw]) { pendingMod += MOD[lw]; continue; }
+      if (UNIT[lw]) { if (segStr) segStr += UNIT[lw]; continue; }
+      const c = baseCn(w);
+      if (c) {
+        // 修饰前缀 + 颜色:去掉颜色里可能重复的"色",拼成"深驼色"
+        let cc = c;
+        if (pendingMod) { cc = pendingMod + c.replace(/色$/, '') + (/[色绿红蓝紫黄白黑灰棕粉青]$/.test(c.replace(/色$/, '')) ? '' : '色'); pendingMod=''; }
+        segStr += cc; localHit = true; anyColor = true; continue;
+      }
+      // 非颜色描述词(Flowers/pattern/base/Small 等):直接丢弃,不污染
+      pendingMod = '';
+    }
+    if (pendingMod && !segStr) segStr = pendingMod + '色';
+    return { str: segStr, hit: localHit };
+  };
+
+  for (const g of groups) {
+    if (/^[+*]$/.test(g) || /^\bplus\b$/i.test(g)) { if (out.length && out[out.length-1] !== ' + ') out.push(' + '); continue; }
+    if (/^[,&]$/.test(g)) { if (out.length) out.push('、'); continue; }
+    const r = translateChunk(g);
+    if (r.str) out.push(r.str);
+  }
+
+  let joined = out.join('').replace(/^[\s+、]+|[\s+、]+$/g,'').replace(/(\s*\+\s*)+$/,'').replace(/^(\s*\+\s*)+/,'').trim();
+  joined = joined.replace(/、{2,}/g,'、').replace(/(\s*\+\s*){2,}/g,' + ');
+  if (anyColor && joined) return joined;
+  // 完全无法解析 → 保底原文+色
+  return raw + '色';
+}
+// 近似色兜底:按关键字粗匹配(实在无法精确映射时启用)
+function approxColor(name) {
+  const n = String(name).toLowerCase();
+  const pairs = [['green','#2e8b30'],['blue','#2f6fe0'],['red','#e0201b'],['pink','#ff7eb3'],
+    ['purple','#8e44ad'],['yellow','#f4c518'],['orange','#f57c1f'],['brown','#8b5a2b'],
+    ['gray','#9aa0a6'],['grey','#9aa0a6'],['black','#111111'],['white','#ffffff'],
+    ['beige','#e6d3a3'],['gold','#d4af37'],['silver','#c0c0c0']];
+  for (const [k,v] of pairs) { if (n.includes(k)) return v; }
+  return null;
+}
+// 销量脱敏:保留约两位有效数字,向下取整,返回「lower-upper」;0/空返回 ''
+// 个位→「0-10」;两/三位 step=10;四位 step=100;… 即 step=10^max(1,位数-2)
+// 例:67→「60-70」139→「130-140」1234→「1200-1300」16345→「16000-17000」176543→「170000-180000」
+function desensitize(value) {
+  const n = parseInt(value);
+  if (!n || isNaN(n) || n <= 0) return '';
+  const digits = String(n).length;
+  if (digits <= 1) return '「0-10」';
+  const step = Math.pow(10, Math.max(1, digits - 2));
+  const lower = Math.floor(n / step) * step;
+  const upper = lower + step;
+  return '「' + lower + '-' + upper + '」';
+}
+// 把数据源里的销量区间串转成展示用「XX-XX」;上界为 +∞ 时展示「下界+」
+// 例:(0,100]→「0-100」(10,30]→「10-30」(10000,+∞)→「10000+」(100,+∞)→「100+」
+function rangeLabel(raw) {
+  if (raw == null) return '';
+  const s = String(raw).trim();
+  if (s === '' || /^(null|#n\/a|n\/a|none)$/i.test(s)) return '';
+  const m = s.match(/[\(\[]\s*([^,]+?)\s*,\s*([^\]\)]+?)\s*[\]\)]/);
+  if (!m) return '';                          // 非区间格式,不展示
+  const lo = m[1].trim();
+  let hi = m[2].trim();
+  const loNum = parseFloat(lo.replace(/[^\d.\-]/g, ''));
+  const loShow = isNaN(loNum) ? lo : String(Math.round(loNum));
+  if (/[+∞]|inf/i.test(hi)) return '「' + loShow + '+」';   // 上界无穷 → 「下界+」
+  const hiNum = parseFloat(hi.replace(/[^\d.\-]/g, ''));
+  const hiShow = isNaN(hiNum) ? hi : String(Math.round(hiNum));
+  return '「' + loShow + '-' + hiShow + '」';
+}
+// 生成卡面颜色圆点:优先精确映射,最多 5 个;不确定的先跳过,凑不满时再用近似色补
+// 若实际颜色数超过 5,末尾追加 "+N" 溢出提示
+function colorDots(colorList) {
+  if (!colorList || !colorList.length) return '';
+  const total = colorList.length;
+  const exact = [], approx = [];
+  for (const raw of colorList) {
+    const key = String(raw).trim().toLowerCase();
+    if (COLOR_NAME_MAP[key]) exact.push({ name: raw, val: COLOR_NAME_MAP[key] });
+    else { const a = approxColor(raw); if (a) approx.push({ name: raw, val: a }); }
+  }
+  let picked = exact.slice(0, 5);
+  if (picked.length < 5) picked = picked.concat(approx.slice(0, 5 - picked.length));
+  if (!picked.length) return '';
+  const dots = picked.map(c => {
+    const bg = c.val;
+    const border = (c.val.toLowerCase() === '#ffffff' || c.val.toLowerCase() === '#fffff0') ? 'border:1px solid #ccc;' : '';
+    return `<span class="pc-dot" style="background:${bg};${border}" title="${String(c.name).replace(/"/g,'')}"></span>`;
+  }).join('');
+  const overflow = total > 5 ? `<span class="pc-dot-more" title="还有 ${total - 5} 种颜色未展示">+${total - 5}</span>` : '';
+  return `<div class="pc-dots">${dots}${overflow}</div>`;
+}
+// 近3天环比增速:向下取整到 10% 档,只在为正时返回展示串(如 近3日增速 ↑10%);否则返回 ''
+function wowUpBadge(wowRaw) {
+  if (wowRaw == null || isNaN(wowRaw)) return '';
+  const pct = wowRaw * 100;
+  if (pct <= 0) return '';
+  const floored = Math.floor(pct / 10) * 10;
+  if (floored < 10) return '';   // 不足 10% 档不展示
+  return `<span class="pc-sale pc-sale-wow" title="近3日环比增速"><i>近3日增速</i>&#9650;${floored}%</span>`;
+}
+// 分渠道出单占比条(分母=近7日总量 Q;短视频红/直播绿/货架蓝);三者全 0 则不显示
+function channelBar(p) {
+  // 占比已在数据源预计算(场域_短视频/直播/货架占比),三者相加为100,无数据时为空
+  const pv = Math.max(0, p.chPctVideo || 0);
+  const pl = Math.max(0, p.chPctLive || 0);
+  const ps = Math.max(0, p.chPctShelf || 0);
+  if (pv + pl + ps <= 0) return '';
+  const seg = (w, cls, label) => { if (w <= 0) return ''; const tip = label + ' ' + w + '%'; return `<span class="pc-ch-seg ${cls}" style="flex:0 0 ${w}%;width:${w}%;max-width:${w}%" data-tip="${tip}" title="${tip}"></span>`; };
+  return `<div class="pc-channel">`
+    + seg(pv, 'ch-video', '短视频') + seg(pl, 'ch-live', '直播') + seg(ps, 'ch-shelf', '货架')
+    + `</div>`;
+}
+
+// 国家代码 → 国旗 emoji(区域指示符);无法识别时返回空串
+function countryFlag(code) {
+  if (!code) return '';
+  const cc = String(code).trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(cc)) return '';
+  const base = 0x1F1E6; // 区域指示符 A
+  return String.fromCodePoint(base + (cc.charCodeAt(0) - 65)) + String.fromCodePoint(base + (cc.charCodeAt(1) - 65)) + ' ';
+}
+
+function buildCardHtml(p) {
+  const tagCls = tagClass(p.tag);
+  const keyMerchant = /SKM商家/.test(p.skm || '') && !/非SKM/.test(p.skm || '') ? `<span class="pc-keymerchant">重点商家</span>` : '';
+  const wowTxt = wowUpBadge(p.wowRaw);
+  const dots = colorDots(p.colorList);
+  const chBar = channelBar(p);
+  // 店铺名称(截断)
+  const storeName = (p.store && String(p.store).trim() !== '') ? String(p.store) : '';
+  // 店铺评分(原"店铺SPS分" → 改名"店铺评分")
+  const spsScore = (p.sps && String(p.sps).trim() !== '') ? String(p.sps).trim() : '';
+  // 类目组合:数据源里的 "+" 展示为 "/"
+  const catCombo = (p.catCombo || '').replace(/\+/g, '/');
+  // 类目副信息行(参考图:运动品类 / 子类目);国家单独抽出为醒目标签
+  const subInfo = catCombo || '';
+  // 国家:独立醒目标签(带国旗 emoji + 高对比配色),放在类目行最前
+  const countryTag = p.country ? `<span class="pc-country-tag" title="站点国家">${countryFlag(p.country)}${p.country}</span>` : '';
+  // 库存(真实相加,不脱敏)
+  const stockVal = (p.stock || 0) + (p.jitStock || 0);
+  // 商品 tag(新老品/爆款…):放到 SPU 同一行、右对齐
+  const spuTagInline = p.tag ? `<span class="pc-spu-tag ${tagCls}">${p.tag}</span>` : '';
+  // 顶部属性标签流:已清空(重点商家移至 类目|国家 行右对齐,季节移至价格行)
+  const attrRow = '';
+  // 季节标签:放到价格行,位于库存右侧
+  const seasonInline = p.season ? `<span class="pc-price-season">${p.season}</span>` : '';
+  // 上架日期:胶囊标签,放在颜色圆块行左侧(位于更新日期上方)
+  const uploadInline = p.uploadDate ? `<span class="pc-cap pc-cap-list pc-upload-inline" title="全球首次上架日期">上架 ${p.uploadDate}</span>` : '';
+  // 销量标签:直接取数据源区间字段,转成「XX-XX」(历史累计销量区间/近7天出单区间/T-1出单区间)
+  const histLabel = rangeLabel(p.histRange);
+  const s7Label = rangeLabel(p.range7);
+  const t1Label = rangeLabel(p.rangeT1);
+  const histTag = histLabel ? `<span class="pc-sale pc-sale-hist" title="历史累计销量"><i>历史</i>${histLabel}</span>` : '';
+  const s7Tag = s7Label ? `<span class="pc-sale pc-sale-7" title="近7日销量"><i>近7日</i>${s7Label}</span>` : '';
+  const t1Tag = t1Label ? `<span class="pc-sale pc-sale-t1" title="昨日销量"><i>昨日</i>${t1Label}</span>` : '';
+  // 历史/近7日/昨日销量 + 近3日增速 → 2×2 网格
+  const wowCell = wowTxt ? `<div class="pc-sale-cell">${wowTxt}</div>` : '';
+  const salesCells = ''
+    + (histTag ? `<div class="pc-sale-cell">${histTag}</div>` : '')
+    + (s7Tag ? `<div class="pc-sale-cell">${s7Tag}</div>` : '')
+    + (t1Tag ? `<div class="pc-sale-cell">${t1Tag}</div>` : '')
+    + wowCell;
+  const salesRow = salesCells ? `<div class="pc-sales pc-sales-grid">${salesCells}</div>` : '';
+  return `
+    <div class="product-card">
+      <div class="product-img-wrap" onclick="openSKU('${p.pid}')">
+        ${productImgTag('product-img', p.image)}
+        ${p.isNew ? '<span class="pc-new-badge" title="本期相对上一期新增">新增</span>' : ''}
+        <button class="product-img-btn" onclick="event.stopPropagation();openLightbox('${p.image}')">查看大图</button>
+      </div>
+      <div class="product-info" onclick="openSKU('${p.pid}')" style="cursor:pointer;">
+        <div class="pc-infoblock">
+          <div class="pc-spu-row">
+            <span class="pc-spu">SPU ${p.spuCode || '-'}</span>
+            ${spuTagInline}
+          </div>
+          <div class="pc-pid">${p.pid}</div>
+          <div class="pc-store-row">
+            <span class="pc-store-name" title="${storeName.replace(/"/g,'')}">${storeName || '-'}</span>
+            ${spsScore ? `<span class="pc-store-score" title="店铺评分">店铺评分 <b>${spsScore}</b></span>` : ''}
+          </div>
+          ${(subInfo || countryTag || keyMerchant) ? `<div class="pc-subinfo-row">${countryTag}<span class="pc-subinfo" title="${subInfo.replace(/"/g,'')}">${subInfo}</span>${keyMerchant}</div>` : ''}
+          <div class="pc-priceline">
+            <span class="product-price">${p.promoPrice || '-'}</span>
+            ${stockVal > 0 ? `<span class="pc-stock">库存 ${stockVal}</span>` : ''}
+            ${seasonInline}
+          </div>
+        </div>
+        ${attrRow}
+        ${salesRow}
+        ${chBar}
+        <div class="pc-dots-row">
+          ${uploadInline}
+          ${dots}
+        </div>
+        <div class="pc-bottom">
+          <span class="pc-date" title="更新日期(入池日期)">${p.intakeDate ? '更新 ' + p.intakeDate : ''}</span>
+          <button class="quick-add-btn" title="快速加入（热销色 / S M L混发 / 6件）" onclick="event.stopPropagation();quickAdd('${p.pid}')">+</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// 从头渲染(筛选/排序/重置后调用):清空网格并渲染首屏,滚回顶部
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  bindScrollLoader();
+  if (filteredProducts.length === 0) {
+    grid.className = '';
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F50D;</div><div class="empty-state-text">暂无匹配商品</div></div>';
+    renderedCount = 0;
+    updateProductCount();
+    return;
+  }
+  grid.className = 'product-grid';
+  grid.innerHTML = '';
+  renderedCount = 0;
+  const sa = document.getElementById('scrollArea');
+  if (sa) sa.scrollTop = 0;
+  appendMoreProducts();
+  // 若首屏未撑满容器,继续补齐直到出现滚动条或全部加载完
+  fillUntilScrollable();
+}
+
+// 追加下一批商品
+function appendMoreProducts() {
+  const grid = document.getElementById('productGrid');
+  if (!grid || renderedCount >= filteredProducts.length) return;
+  const next = filteredProducts.slice(renderedCount, renderedCount + RENDER_CHUNK);
+  const frag = document.createElement('div');
+  frag.innerHTML = next.map(buildCardHtml).join('');
+  while (frag.firstChild) grid.appendChild(frag.firstChild);
+  renderedCount += next.length;
+  updateProductCount();
+}
+
+// 若内容不足以产生滚动条,持续补齐(避免无法触发滚动加载)
+function fillUntilScrollable() {
+  const sa = document.getElementById('scrollArea');
+  if (!sa) return;
+  let guard = 0;
+  while (renderedCount < filteredProducts.length && sa.scrollHeight <= sa.clientHeight + 40 && guard < 200) {
+    appendMoreProducts();
+    guard++;
+  }
+}
+
+function updateProductCount() {
+  const el = document.getElementById('filterStats');
+  // filterStats 由 applyFilters 设置匹配数,这里补充"已加载 x/总数"提示到分页占位区
+  const bar = document.getElementById('pagination');
+  if (!bar) return;
+  const total = filteredProducts.length;
+  if (total === 0) { bar.innerHTML = ''; return; }
+  if (renderedCount >= total) {
+    bar.innerHTML = `<span class="pg-total">已展示全部 ${total} 件</span>`;
+  } else {
+    bar.innerHTML = `<span class="pg-total">已加载 ${renderedCount} / ${total} 件 · 向下滚动加载更多</span>`;
+  }
+}
+
+// 绑定滚动监听:接近底部时自动追加
+function bindScrollLoader() {
+  if (_scrollBound) return;
+  const sa = document.getElementById('scrollArea');
+  if (!sa) return;
+  sa.addEventListener('scroll', function() {
+    if (renderedCount >= filteredProducts.length) return;
+    if (sa.scrollTop + sa.clientHeight >= sa.scrollHeight - 600) {
+      appendMoreProducts();
+    }
+  });
+  _scrollBound = true;
+}
+
+// ===== SPU-PID 互查 =====
+// 加载 pid_map.csv,构建双向索引。预览环境直接用注入的 window.PREVIEW_PID_MAP。
+function loadPidMap(cb) {
+  if (PID_MAP_LOADED) { if (cb) cb(); return; }
+  if (PID_MAP_LOADING) { return; }
+  PID_MAP_LOADING = true;
+
+  if (window.PREVIEW_PID_MAP) {
+    buildPidIndex(window.PREVIEW_PID_MAP);
+    PID_MAP_LOADED = true; PID_MAP_LOADING = false;
+    if (cb) cb();
+    return;
+  }
+
+  var candidates = ['data/pid_map.csv', 'pid_map.csv'];
+  tryLoadPidMap(candidates, 0, cb);
+}
+
+function tryLoadPidMap(candidates, idx, cb) {
+  if (idx >= candidates.length) {
+    PID_MAP_LOADING = false;
+    if (cb) cb(new Error('pid_map load failed'));
+    return;
+  }
+  Papa.parse(candidates[idx] + (candidates[idx].indexOf('?') === -1 ? '?v=' : '&v=') + (window.DATA_VERSION || Date.now()), {
+    download: true, header: true, skipEmptyLines: true,
+    complete: function(results) {
+      var rows = results.data || [];
+      if (!rows.length) { tryLoadPidMap(candidates, idx + 1, cb); return; }
+      buildPidIndex(rows);
+      PID_MAP_LOADED = true; PID_MAP_LOADING = false;
+      if (cb) cb();
+    },
+    error: function() { tryLoadPidMap(candidates, idx + 1, cb); }
+  });
+}
+
+// rows: [{spu_code|spu, buyer|买手, DE, ES, FR, IT, GB, US, MX}, ...]
+function buildPidIndex(rows) {
+  PID_MAP = {}; PID_INDEX = {};
+  rows.forEach(function(r) {
+    var spu = String(r.spu_code || r.spu || r.SPU || '').trim();
+    if (!spu) return;
+    var entry = { buyer: String(r.buyer || r['买手'] || '').trim() };
+    LOOKUP_COUNTRIES.forEach(function(c) {
+      var v = String(r[c] || '').trim();
+      entry[c] = v;
+      if (v && !PID_INDEX[v]) PID_INDEX[v] = { spu: spu, country: c };
+    });
+    PID_MAP[spu] = entry;
+  });
+}
+
+function initLookup() {
+  renderLookupColChips();
+  var elCount = document.getElementById('lookupDbCount');
+  if (PID_MAP_LOADED) {
+    if (elCount) elCount.textContent = '已加载 ' + Object.keys(PID_MAP).length + ' 个 SPU / ' + Object.keys(PID_INDEX).length + ' 个 PID';
+    return;
+  }
+  if (elCount) elCount.textContent = '正在加载对照表...';
+  loadPidMap(function(err) {
+    if (err) { if (elCount) elCount.textContent = '对照表加载失败,请刷新重试'; return; }
+    if (elCount) elCount.textContent = '已加载 ' + Object.keys(PID_MAP).length + ' 个 SPU / ' + Object.keys(PID_INDEX).length + ' 个 PID';
+  });
+}
+
+// 渲染国家列勾选 chip(可只选 1~3 个国家)
+function renderLookupColChips() {
+  var box = document.getElementById('lookupColsItems');
+  if (!box) return;
+  box.innerHTML = LOOKUP_COUNTRIES.map(function(c){
+    var on = lookupSelectedCols.indexOf(c) !== -1;
+    return '<label class="lk-col-chip' + (on ? ' on' : '') + '" data-c="' + c + '">'
+      + '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="toggleLookupCol(\'' + c + '\', this.checked)">'
+      + c + '</label>';
+  }).join('');
+}
+
+function toggleLookupCol(c, checked) {
+  var i = lookupSelectedCols.indexOf(c);
+  if (checked && i === -1) lookupSelectedCols.push(c);
+  if (!checked && i !== -1) lookupSelectedCols.splice(i, 1);
+  // 按固定国家顺序排序,保证列序稳定
+  lookupSelectedCols.sort(function(a, b){ return LOOKUP_COUNTRIES.indexOf(a) - LOOKUP_COUNTRIES.indexOf(b); });
+  renderLookupColChips();
+  // 已有结果时,实时刷新表格列
+  if (lastLookupRows.length) reRenderLookupResult();
+}
+
+function setLookupCols(all) {
+  lookupSelectedCols = all ? LOOKUP_COUNTRIES.slice() : [];
+  renderLookupColChips();
+  if (lastLookupRows.length) reRenderLookupResult();
+}
+
+// 识别输入类型:先精确命中表;未命中则按形态猜测(S 开头=SPU,长数字=PID),便于给出"未找到"
+function classifyToken(tok) {
+  var t = tok.trim();
+  if (!t) return null;
+  if (PID_MAP[t]) return { type: 'spu', value: t };
+  if (PID_INDEX[t]) return { type: 'pid', value: t };
+  if (/^s/i.test(t)) return { type: 'spu', value: t };
+  if (/^\d{6,}$/.test(t)) return { type: 'pid', value: t };
+  return { type: 'spu', value: t };
+}
+
+function parseLookupTokens(text) {
+  var raw = (text || '').split(/[\s,;，、\n\r\t]+/);
+  var seen = {}, out = [];
+  raw.forEach(function(x) {
+    var t = x.trim();
+    if (!t || seen[t]) return;
+    seen[t] = 1; out.push(t);
+  });
+  return out;
+}
+
+function runLookup() {
+  var input = document.getElementById('lookupInput');
+  var tokens = parseLookupTokens(input ? input.value : '');
+  if (!tokens.length) { showToast('请先输入 SPU 或 PID'); return; }
+  if (!PID_MAP_LOADED) { initLookup(); showToast('对照表加载中,请稍候再查'); return; }
+  if (tokens.length > 5000) { showToast('单次最多查询 5000 条,已截断'); tokens = tokens.slice(0, 5000); }
+
+  var rows = [], okCount = 0, missCount = 0;
+  tokens.forEach(function(tok) {
+    var cls = classifyToken(tok);
+    if (cls.type === 'spu') {
+      var entry = PID_MAP[cls.value];
+      if (entry) {
+        okCount++;
+        var row = { input: cls.value, type: 'SPU', spu: cls.value, buyer: entry.buyer || '', found: true };
+        LOOKUP_COUNTRIES.forEach(function(c){ row[c] = entry[c] || ''; });
+        rows.push(row);
+      } else { missCount++; rows.push({ input: cls.value, type: 'SPU', spu: cls.value, found: false }); }
+    } else {
+      var hit = PID_INDEX[cls.value];
+      if (hit) {
+        okCount++;
+        var entry2 = PID_MAP[hit.spu] || {};
+        var row2 = { input: cls.value, type: 'PID', spu: hit.spu, buyer: entry2.buyer || '', hitCountry: hit.country, found: true };
+        LOOKUP_COUNTRIES.forEach(function(c){ row2[c] = entry2[c] || ''; });
+        rows.push(row2);
+      } else { missCount++; rows.push({ input: cls.value, type: 'PID', spu: '', found: false }); }
+    }
+  });
+
+  lastLookupRows = rows;
+  reRenderLookupResult();
+}
+
+// 用当前勾选列重新渲染统计条与结果表(rows 内始终保存全部国家数据)
+function reRenderLookupResult() {
+  var rows = lastLookupRows;
+  var okCount = rows.filter(function(r){ return r.found; }).length;
+  var missCount = rows.length - okCount;
+  renderLookupResult(rows, okCount, missCount);
+}
+
+function renderLookupResult(rows, okCount, missCount) {
+  var cols = lookupSelectedCols.length ? lookupSelectedCols : [];
+  var stats = document.getElementById('lookupStats');
+  var wrap = document.getElementById('lookupResultWrap');
+  var actions = document.getElementById('lookupResultActions');
+  if (stats) {
+    stats.innerHTML = '共 ' + rows.length + ' 条输入,'
+      + '<span class="ok">命中 ' + okCount + '</span>,'
+      + '<span class="miss">未找到 ' + missCount + '</span>'
+      + (cols.length ? '(显示 ' + cols.length + ' 国:' + cols.join('/') + ')' : '(未选择国家列)');
+  }
+  if (actions) actions.style.display = rows.length ? 'flex' : 'none';
+  if (!rows.length) { if (wrap) wrap.innerHTML = ''; return; }
+
+  var esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var cell = function(v, hit){
+    if (!v) return '<td class="lk-miss">—</td>';
+    return '<td' + (hit ? ' style="color:var(--accent);font-weight:600;"' : '') + '>' + esc(v) + '</td>';
+  };
+  var html = '<table class="lookup-table"><thead><tr><th>输入</th><th>SPU</th><th>买手</th>'
+    + cols.map(function(c){ return '<th>' + c + '</th>'; }).join('')
+    + '</tr></thead><tbody>';
+  rows.forEach(function(r){
+    if (!r.found) {
+      html += '<tr class="lk-notfound"><td class="lk-key">' + esc(r.input)
+        + '<span class="lk-input-type ' + (r.type === 'PID' ? 'pid' : 'spu') + '">' + r.type + '</span></td>'
+        + '<td colspan="' + (cols.length + 2) + '">未找到</td></tr>';
+      return;
+    }
+    html += '<tr><td class="lk-key">' + esc(r.input)
+      + '<span class="lk-input-type ' + (r.type === 'PID' ? 'pid' : 'spu') + '">' + r.type + '</span></td>'
+      + '<td>' + esc(r.spu) + '</td>'
+      + '<td class="lk-buyer">' + (r.buyer ? esc(r.buyer) : '<span class="lk-miss">—</span>') + '</td>'
+      + cols.map(function(c){ return cell(r[c], r.type === 'PID' && r.hitCountry === c); }).join('')
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  if (wrap) wrap.innerHTML = html;
+}
+
+function clearLookup() {
+  var input = document.getElementById('lookupInput');
+  if (input) input.value = '';
+  lastLookupRows = [];
+  var wrap = document.getElementById('lookupResultWrap');
+  var stats = document.getElementById('lookupStats');
+  var actions = document.getElementById('lookupResultActions');
+  if (wrap) wrap.innerHTML = '';
+  if (stats) stats.innerHTML = '';
+  if (actions) actions.style.display = 'none';
+}
+
+function lookupRowsToMatrix() {
+  var cols = lookupSelectedCols.length ? lookupSelectedCols : [];
+  var head = ['输入', '输入类型', 'SPU', '买手'].concat(cols).concat(['查询结果']);
+  var body = lastLookupRows.map(function(r){
+    var line = [r.input, r.type, r.found ? r.spu : '', r.found ? (r.buyer || '') : ''];
+    cols.forEach(function(c){ line.push(r.found ? (r[c] || '') : ''); });
+    line.push(r.found ? '命中' : '未找到');
+    return line;
+  });
+  return [head].concat(body);
+}
+
+function copyLookupResult() {
+  if (!lastLookupRows.length) { showToast('暂无结果可复制'); return; }
+  if (!lookupSelectedCols.length) { showToast('请至少勾选一个国家列'); return; }
+  var text = lookupRowsToMatrix().map(function(row){ return row.join('\t'); }).join('\n');
+  var done = function(){ showToast('已复制 ' + lastLookupRows.length + ' 条结果(可直接粘贴到表格)'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text, done); });
+  } else { fallbackCopy(text, done); }
+}
+
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); if (done) done(); } catch(e) { showToast('复制失败,请手动选择'); }
+  document.body.removeChild(ta);
+}
+
+function exportLookupResult(fmt) {
+  if (!lastLookupRows.length) { showToast('暂无结果可导出'); return; }
+  if (!lookupSelectedCols.length) { showToast('请至少勾选一个国家列'); return; }
+  var matrix = lookupRowsToMatrix();
+  var ts = new Date();
+  var stamp = ts.getFullYear() + ('0'+(ts.getMonth()+1)).slice(-2) + ('0'+ts.getDate()).slice(-2)
+    + '_' + ('0'+ts.getHours()).slice(-2) + ('0'+ts.getMinutes()).slice(-2);
+  if (fmt === 'xlsx' && window.XLSX) {
+    var ws = XLSX.utils.aoa_to_sheet(matrix);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'SPU-PID互查');
+    XLSX.writeFile(wb, 'SPU-PID互查_' + stamp + '.xlsx');
+    showToast('已导出 Excel');
+    return;
+  }
+  var csv = matrix.map(function(row){
+    return row.map(function(v){
+      var s = String(v == null ? '' : v);
+      if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }).join(',');
+  }).join('\r\n');
+  var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'SPU-PID互查_' + stamp + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  showToast('已导出 CSV');
+}
+
+// ===== Tag Guide =====
+function openGuide() { document.getElementById('guideModal').classList.add('active'); }
+function closeGuide() { document.getElementById('guideModal').classList.remove('active'); }
+
+// ===== Lightbox =====
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+
+// ===== SKU Modal =====
+function openSKU(pid) {
+  currentProduct = PRODUCTS.find(p => p.pid === pid);
+  selectedColor = null;
+  selectedSize = null;
+  renderSKUModal();
+  document.getElementById('skuModal').classList.add('active');
+}
+
+function renderSKUModal() {
+  const p = currentProduct;
+  // 颜色/尺码:弹窗内只展示数据源里的真实颜色与尺码,由用户手动选择
+  const srcColors = (p.colorList && p.colorList.length) ? p.colorList : [];
+  const srcSizes = (p.sizeList && p.sizeList.length) ? p.sizeList : [];
+  const colors = srcColors;
+  const sizes = srcSizes;
+  const infoCell = (label, val) => `<div class="sku-info-cell"><span class="sku-info-label">${label}</span><span class="sku-info-val">${val}</span></div>`;
+  // 近7日出单结构:百分比(分母=近7日总量 Q,兜底三渠道之和)
+  const chSum = (p.chPctVideo||0)+(p.chPctLive||0)+(p.chPctShelf||0);
+  const channelStruct = chSum > 0
+    ? `短视频${p.chPctVideo||0}% / 直播${p.chPctLive||0}% / 货架${p.chPctShelf||0}%`
+    : '-';
+  // 近3天环比增速脱敏:与卡面一致,向下取整到 10% 档,仅正值展示
+  const wowDesens = (function(){
+    if (p.wowRaw == null || isNaN(p.wowRaw)) return '';
+    const pct = p.wowRaw * 100;
+    if (pct <= 0) return '';
+    const floored = Math.floor(pct / 10) * 10;
+    if (floored < 10) return '';
+    return '↑' + floored + '%';
+  })();
+  // 商家标签:仅在重点商家时展示"重点商家",否则整条不显示
+  const isKeyMerchant = /SKM商家/.test(p.skm || '') && !/非SKM/.test(p.skm || '');
+  document.getElementById('skuModalContent').innerHTML = `
+    <button class="modal-close-btn" onclick="closeModal()" title="关闭">&times;</button>
+    <div class="sku-layout">
+      <div class="sku-left">
+        ${productImgTag('sku-big-img', p.image).replace('<img ', `<img onclick="openLightbox('${p.image}')" title="点击查看大图" `)}
+        ${p.tag ? `<span class="sku-img-tag">${p.tag}</span>` : ''}
+      </div>
+      <div class="sku-right">
+        <div class="sku-header">
+          <div class="sku-header-info">
+            <div class="sku-header-title">${p.store || ''} · ${p.category3 || ''}</div>
+            <div class="sku-header-price">${p.promoPrice}</div>
+            <div class="sku-header-pid">PID: ${p.pid}</div>
+            <div class="sku-header-buyer">SPU: ${p.spuCode}</div>
+          </div>
+        </div>
+        <div class="sku-section sku-info-grid-wrap">
+          <div class="sku-info-grid">
+            ${infoCell('原始国家', p.country || '-')}
+            ${isKeyMerchant ? infoCell('商家标签', '重点商家') : ''}
+            ${infoCell('类目组合', p.catCombo || '-')}
+            ${infoCell('季节标签', p.season || '-')}
+            ${infoCell('价格', p.promoPrice || '-')}
+            ${infoCell('上架日期', p.uploadDate || '-')}
+            ${infoCell('JIT标签', p.isJit ? 'JIT' : '-')}
+            ${wowDesens ? infoCell('近3天环比增速', wowDesens) : ''}
+            ${infoCell('近7日出单结构', channelStruct)}
+            ${infoCell('历史销量', rangeLabel(p.histRange) || '-')}
+            ${infoCell('近7日销量', rangeLabel(p.range7) || '-')}
+            ${infoCell('昨日销量', rangeLabel(p.rangeT1) || '-')}
+            ${infoCell('买手', p.developer || '-')}
+          </div>
+          ${(p.image || p.url) ? `<div class="sku-url-row sku-url-row-inline">${p.image ? `<a href="${p.image}" target="_blank" rel="noopener noreferrer" class="sku-url-link">首图链接</a>` : ''}${p.url ? `<a href="${p.url}" target="_blank" rel="noopener noreferrer" class="sku-url-link">商品详情页</a>` : ''}</div>` : ''}
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">颜色 <span class="sku-count">共 ${srcColors.length} 色</span></div>
+          <div class="sku-options" id="colorOptions">
+            ${colors.length ? colors.map((c) => `<div class="sku-option" onclick="selectColor(this,'${c.replace(/'/g,"\\'")}')">${colorToCn(c)}</div>`).join('') : '<span class="sku-empty">无颜色数据</span>'}
+          </div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">尺码 <span class="sku-count">共 ${srcSizes.length} 码</span></div>
+          <div class="sku-options" id="sizeOptions">
+            ${sizes.length ? sizes.map((s) => `<div class="sku-option" onclick="selectSize(this,'${s.replace(/'/g,"\\'")}')">${s}</div>`).join('') : '<span class="sku-empty">无尺码数据</span>'}
+          </div>
+        </div>
+        <div class="sku-section">
+          <div class="sku-section-title">数量 <span class="sku-count">双击可键盘输入</span></div>
+          <div class="quantity-row">
+            <div class="quantity-ctrl">
+              <div class="quantity-btn" onclick="changeQty(-1)">&#x2212;</div>
+              <input class="quantity-input" id="qtyInput" value="1" inputmode="numeric" title="双击后可直接输入件数" ondblclick="enableQtyEdit()" onblur="commitQty()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" readonly>
+              <div class="quantity-btn" onclick="changeQty(1)">+</div>
+            </div>
+          </div>
+        </div>
+        <button class="add-cart-btn" onclick="addToCart()">加入圈品池</button>
+        <div id="skuFeedback"></div>
+      </div>
+    </div>
+  `;
+  // 弹窗内不预选任何颜色/尺码,由用户手动选择;默认数量为 1
+  selectedColor = null;
+  selectedSize = null;
+}
+
+function selectColor(el, color) {
+  document.querySelectorAll('#colorOptions .sku-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedColor = color;
+}
+function selectSize(el, size) {
+  document.querySelectorAll('#sizeOptions .sku-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSize = size;
+}
+function changeQty(delta) {
+  const input = document.getElementById('qtyInput');
+  let val = (parseInt(input.value) || 0) + delta;
+  input.value = Math.max(1, Math.min(999, val));
+}
+// 双击数量框:解锁,允许键盘输入
+function enableQtyEdit() {
+  const input = document.getElementById('qtyInput');
+  input.readOnly = false;
+  input.focus();
+  input.select();
+}
+// 失焦/回车时:校验并锁回只读
+function commitQty() {
+  const input = document.getElementById('qtyInput');
+  let val = parseInt(input.value);
+  if (isNaN(val) || val < 1) val = 1;
+  input.value = Math.max(1, Math.min(999, val));
+  input.readOnly = true;
+}
+
+function addToCart() {
+  if (!selectedColor) { showToast('请选择颜色'); return; }
+  if (!selectedSize) { showToast('请选择尺码'); return; }
+  const qty = Math.max(1, parseInt(document.getElementById('qtyInput').value) || 1);
+  const existing = cart.find(i => i.pid === currentProduct.pid && i.color === selectedColor && i.size === selectedSize);
+  if (existing) { existing.qty += qty; }
+  else { cart.push({ pid: currentProduct.pid, color: selectedColor, size: selectedSize, qty, product: currentProduct }); }
+  selectedPIDs.add(currentProduct.pid);
+  updateCartCount();
+
+  const fb = document.getElementById('skuFeedback');
+  fb.innerHTML = `<div class="sku-added-feedback">已加入: ${colorToCn(selectedColor)} / ${selectedSize} x${qty}</div>`;
+  setTimeout(() => { fb.innerHTML = ''; }, 2200);
+
+  selectedColor = null;
+  selectedSize = null;
+  document.getElementById('qtyInput').value = '1';
+  document.querySelectorAll('#colorOptions .sku-option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('#sizeOptions .sku-option').forEach(o => o.classList.remove('selected'));
+}
+
+function closeModal() { document.getElementById('skuModal').classList.remove('active'); }
+document.getElementById('skuModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// ===== Cart =====
+// ===== 联系买手(纯买手名片墙) =====
+var BUYERS = [
+  {"name":"张三","img":"","link":"","tag":"跑步鞋;运动鞋;运动配件"},
+  {"name":"李四","img":"","link":"","tag":"瑜伽服;运动裤;运动内衣"},
+  {"name":"王五","img":"","link":"","tag":"运动外套;泳装;健身装备"}
+];
+function buyerEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function renderBuyers(){
+  var box = document.getElementById('buyersContent');
+  if(!box) return;
+  var list = BUYERS;
+  if(list.length===0){
+    box.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F464;</div><div class="empty-state-text">暂无买手</div></div>';
+    return;
+  }
+  box.innerHTML = '<div class="buyers-grid">' + list.map(function(b){
+    var tags = (b.tag||'').split(/[；;、,\/]/).map(function(t){return t.trim();}).filter(Boolean)
+      .map(function(t){ return '<span class="buyer-tag">'+buyerEsc(t)+'</span>'; }).join('');
+    var link = buyerEsc(b.link||'');
+    var img = buyerEsc(b.img||'');
+    var name = buyerEsc(b.name||'');
+    return '<div class="buyer-card">'
+      + '<div class="buyer-qr-wrap"><img src="'+img+'" alt="'+name+' 二维码" loading="lazy"></div>'
+      + '<div class="buyer-body">'
+      + '<div class="buyer-name">'+name+'</div>'
+      + '<div class="buyer-tags">'+tags+'</div>'
+      + (link ? '<a class="buyer-add-btn" href="'+link+'" target="_blank" rel="noopener noreferrer">立即添加买手</a>' : '')
+      + '</div></div>';
+  }).join('') + '</div>';
+}
+
+function renderCart() {
+  const content = document.getElementById('cartContent');
+  const bottomBar = document.getElementById('cartBottomBar');
+  if (cart.length === 0) {
+    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F6D2;</div><div class="empty-state-text">圈品池为空，去商品浏览页逛逛吧</div></div>';
+    bottomBar.classList.remove('active');
+    document.getElementById('cartSubtitle').textContent = '选择商品后导出申样记录';
+    return;
+  }
+  const grouped = {};
+  cart.forEach(item => { if (!grouped[item.pid]) grouped[item.pid] = { product: item.product, items: [] }; grouped[item.pid].items.push(item); });
+  const totalPIDs = Object.keys(grouped).length;
+  const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cartSubtitle').textContent = `${totalPIDs} 个商品，共 ${totalItems} 件`;
+
+  content.innerHTML = '<div class="cart-grid">' + Object.entries(grouped).map(([pid, group]) => {
+    const totalQty = group.items.reduce((sum, i) => sum + i.qty, 0);
+    const checked = selectedPIDs.has(pid) ? 'checked' : '';
+    const selCls = selectedPIDs.has(pid) ? ' selected' : '';
+    const prod = group.product;
+    const spu = prod.spuCode || '-';
+    const country = prod.country ? `<span class="cart-card-country">${countryFlag(prod.country)}${prod.country}</span>` : '';
+    const skuRows = group.items.map((item, idx) => `
+      <div class="cart-sku-erow">
+        <span class="cart-sku-color">颜色:${colorToCn(item.color)}</span>
+        <div class="cart-edit-field">
+          <label>尺码</label>
+          <input class="cart-edit-input size" type="text" value="${(item.size||'').replace(/"/g,'&quot;')}"
+            placeholder="如 S/M/均码" title="尺码:可输入字母/中文/数字"
+            onchange="updateCartSize('${pid}',${idx},this.value)">
+        </div>
+        <div class="cart-edit-field">
+          <label>件数</label>
+          <input class="cart-edit-input qty" type="text" inputmode="numeric" value="${item.qty}"
+            placeholder="件数" title="件数:仅可输入数字"
+            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+            onchange="updateCartQty('${pid}',${idx},this.value)">
+        </div>
+        <span class="cart-sku-del" onclick="removeCartItem('${pid}',${idx})">移除</span>
+      </div>
+    `).join('');
+    return `
+      <div class="cart-card${selCls}">
+        <input type="checkbox" class="cart-card-check" ${checked} onchange="togglePIDSelect('${pid}', this.checked); renderCart();">
+        <div class="cart-card-imgwrap" onclick="openLightbox('${prod.image}')" title="点击查看大图">
+          ${productImgTag('cart-card-img', prod.image)}
+        </div>
+        <div class="cart-card-body">
+          <div class="cart-card-spu">${prod.store || spu} · ${prod.category3 || ''}</div>
+          <div class="cart-card-meta"><span>SPU ${spu}</span><span>PID ${pid}</span>${country}</div>
+          <div class="cart-sku-edit">${skuRows}</div>
+          <div class="cart-card-total">合计 ${totalQty} 件</div>
+        </div>
+      </div>`;
+  }).join('') + '</div>';
+  bottomBar.classList.add('active');
+  updateSelectAllBtn();
+}
+
+function togglePIDSelect(pid, checked) {
+  if (checked) selectedPIDs.add(pid); else selectedPIDs.delete(pid);
+  updateSelectAllBtn();
+}
+
+function toggleSelectAll() {
+  const allPIDs = [...new Set(cart.map(i => i.pid))];
+  if (selectedPIDs.size === allPIDs.length) { selectedPIDs.clear(); } else { allPIDs.forEach(pid => selectedPIDs.add(pid)); }
+  renderCart();
+}
+
+function updateSelectAllBtn() {
+  const allPIDs = [...new Set(cart.map(i => i.pid))];
+  const btn = document.getElementById('selectAllBtn');
+  if (selectedPIDs.size === allPIDs.length && allPIDs.length > 0) { btn.classList.add('active'); btn.textContent = '取消全选'; }
+  else { btn.classList.remove('active'); btn.textContent = '全选'; }
+}
+
+function removeCartItem(pid, idx) {
+  const grouped = {};
+  cart.forEach(item => { if (!grouped[item.pid]) grouped[item.pid] = []; grouped[item.pid].push(item); });
+  const target = grouped[pid][idx];
+  cart = cart.filter(i => i !== target);
+  if (!cart.find(i => i.pid === pid)) selectedPIDs.delete(pid);
+  updateCartCount();
+  renderCart();
+}
+
+// 批量改尺码:把输入的尺码统一应用到"已勾选商品"的所有 SKU 行
+function applyBatchSize() {
+  const inp = document.getElementById('batchSizeInput');
+  const raw = inp ? inp.value : '';
+  const size = String(raw).trim();
+  if (!size) { showToast('请先输入要批量设置的尺码'); return; }
+  if (selectedPIDs.size === 0) { showToast('请先勾选要批量修改的商品'); return; }
+  let n = 0;
+  cart.forEach(item => { if (selectedPIDs.has(item.pid)) { item.size = size; n++; } });
+  if (inp) inp.value = '';
+  renderCart();
+  showToast(`已将 ${selectedPIDs.size} 个商品(${n} 个SKU)的尺码统一改为 ${size}`);
+}
+
+// 批量修改件数(仅纯数字,最小为 1);作用范围=已勾选商品
+function applyBatchQty() {
+  const inp = document.getElementById('batchQtyInput');
+  const raw = inp ? inp.value : '';
+  let qty = parseInt(String(raw).replace(/[^0-9]/g, ''), 10);
+  if (isNaN(qty) || qty < 1) { showToast('请输入大于 0 的纯数字件数'); return; }
+  if (selectedPIDs.size === 0) { showToast('请先勾选要批量修改的商品'); return; }
+  let n = 0;
+  cart.forEach(item => { if (selectedPIDs.has(item.pid)) { item.qty = qty; n++; } });
+  if (inp) inp.value = '';
+  updateCartCount();
+  renderCart();
+  showToast(`已将 ${selectedPIDs.size} 个商品(${n} 个SKU)的件数统一改为 ${qty}`);
+}
+
+// 尺码自定义编辑(不限字符,允许中文/字母/数字);空值兜底为"-"
+function updateCartSize(pid, idx, value) {
+  const grouped = {};
+  cart.forEach(item => { if (!grouped[item.pid]) grouped[item.pid] = []; grouped[item.pid].push(item); });
+  const target = grouped[pid] && grouped[pid][idx];
+  if (!target) return;
+  const clean = String(value).trim();
+  target.size = clean || '-';
+  // 不整表重渲染,避免打断连续编辑;仅同步件数合计
+}
+
+// 件数自定义编辑(仅数字);最小为 1
+function updateCartQty(pid, idx, value) {
+  const grouped = {};
+  cart.forEach(item => { if (!grouped[item.pid]) grouped[item.pid] = []; grouped[item.pid].push(item); });
+  const target = grouped[pid] && grouped[pid][idx];
+  if (!target) return;
+  let n = parseInt(String(value).replace(/[^0-9]/g, ''), 10);
+  if (isNaN(n) || n < 1) n = 1;
+  target.qty = n;
+  updateCartCount();
+  renderCart();
+}
+
+function updateCartCount() {
+  const total = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cartCount').textContent = total;
+  const fc = document.getElementById('floatCartCount');
+  if (fc) fc.textContent = total;
+  updateFloatButtons();
+}
+
+function updateFloatButtons() {
+  const onBrowse = !document.getElementById('productsPage').classList.contains('hidden');
+  const hasItems = cart.length > 0;
+  document.getElementById('floatCart').classList.toggle('show', onBrowse);
+  document.getElementById('floatCopyPid').classList.toggle('show', onBrowse && hasItems);
+  const fbp = document.getElementById('floatBackPool');
+  if (fbp) fbp.classList.toggle('show', onBrowse && ACTIVE_POOL === 'topic');
+}
+
+// 快速添加：默认 热销色 / S M L混发 / 6件
+function quickAdd(pid) {
+  const product = PRODUCTS.find(p => p.pid === pid);
+  if (!product) return;
+  const color = '热销色', size = 'M L XL混发', qty = 3;
+  const existing = cart.find(i => i.pid === pid && i.color === color && i.size === size);
+  if (existing) { existing.qty += qty; }
+  else { cart.push({ pid, color, size, qty, product }); }
+  selectedPIDs.add(pid);
+  updateCartCount();
+  showToast(`已加入：热销色 / M L XL混发 x3（PID …${pid.slice(-6)}）`);
+}
+
+// 复制圈品池 PID（去重 → 系统剪贴板）
+// 圈品池页：优先复制勾选的 PID，未勾选则复制全部；浮动按钮：复制全部
+function copyCartPIDs() {
+  if (cart.length === 0) { showToast('圈品池为空'); return; }
+  let pids;
+  if (selectedPIDs.size > 0) pids = [...selectedPIDs];
+  else pids = [...new Set(cart.map(i => i.pid))];
+  const text = pids.join('\n');
+  const done = () => showToast(`已复制 ${pids.length} 个去重 PID 到剪贴板`);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else { fallbackCopy(text, done); }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) { showToast('复制失败，请手动复制'); }
+  document.body.removeChild(ta);
+}
+
+function copyCartRecords() {
+  if (selectedPIDs.size === 0) { showToast('请至少选择一个商品'); return; }
+  if (!userSettings.agencyName) { showToast('请先在机构设置中选择机构名称'); return; }
+
+  const selectedItems = cart.filter(i => selectedPIDs.has(i.pid));
+  const grouped = {};
+  selectedItems.forEach(i => { if (!grouped[i.pid]) grouped[i.pid] = []; grouped[i.pid].push(i); });
+
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+
+  const rows = [];
+  Object.entries(grouped).forEach(([pid, items]) => {
+    const colorGroups = {};
+    items.forEach(i => { if (!colorGroups[i.color]) colorGroups[i.color] = []; colorGroups[i.color].push(i); });
+    const mValue = Object.entries(colorGroups).map(([color, skus]) => {
+      return `${color}（${skus.map(s => `${s.qty}件${s.size}`).join(' ')}）`;
+    }).join('、');
+    const totalQty = items.reduce((s,i) => s + i.qty, 0);
+    rows.push([dateStr,'',userSettings.agencyName,'','','',userSettings.link||'','',userSettings.creatorName||'',userSettings.creatorHandle||'','国内机构寄样',pid,mValue,'请看前面的信息',totalQty,'CN 中国',userSettings.receiverName||'',userSettings.receiverPhone||'',userSettings.address||'',userSettings.city||'',userSettings.province||'']);
+  });
+
+  // Tab-separated; sanitize any tab/newline inside cell to keep grid intact
+  const text = rows.map(function(r){
+    return r.map(function(c){ return String(c == null ? '' : c).replace(/[\t\r\n]+/g, ' '); }).join('\t');
+  }).join('\n');
+  const n = rows.length;
+  const done = () => showToast(`已复制 ${n} 条申样记录到剪贴板(可直接粘贴到表格)`);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else { fallbackCopy(text, done); }
+}
+
+// ===== Agency Search =====
+// 自定义机构(本地新增,仅存本浏览器,不同步给其他用户)
+let CUSTOM_AGENCIES = [];
+try { CUSTOM_AGENCIES = JSON.parse(localStorage.getItem('customAgencies') || '[]'); } catch (e) { CUSTOM_AGENCIES = []; }
+if (!Array.isArray(CUSTOM_AGENCIES)) CUSTOM_AGENCIES = [];
+function getAllAgencies() {
+  const base = (typeof AGENCIES !== 'undefined' && Array.isArray(AGENCIES)) ? AGENCIES : [];
+  // 自定义机构排在前面,且去重(不与固定列表重复)
+  const seen = new Set(base.map(a => a.toLowerCase()));
+  const extras = CUSTOM_AGENCIES.filter(a => a && !seen.has(a.toLowerCase()));
+  return extras.concat(base);
+}
+function escHtml(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function openAgencyDropdown() { filterAgenciesList(); document.getElementById('agencyDropdown').classList.add('open'); }
+function filterAgenciesList() {
+  const raw = document.getElementById('agencySearchInput').value.trim();
+  const q = raw.toLowerCase();
+  const dd = document.getElementById('agencyDropdown');
+  const all = getAllAgencies();
+  const filtered = q ? all.filter(a => a.toLowerCase().includes(q)) : all;
+  const exactMatch = q && all.some(a => a.toLowerCase() === q);
+  let html = '';
+  if (filtered.length) {
+    html += filtered.slice(0, 30).map(a => {
+      const cls = userSettings.agencyName === a ? 'search-select-item selected' : 'search-select-item';
+      const tag = CUSTOM_AGENCIES.indexOf(a) !== -1 ? '<span class="agency-custom-tag">自定义</span>' : '';
+      return `<div class="${cls}" onclick="selectAgency(\`${a}\`)">${escHtml(a)}${tag}</div>`;
+    }).join('') + (filtered.length > 30 ? `<div class="search-select-empty">还有 ${filtered.length - 30} 个结果，请继续输入筛选</div>` : '');
+  } else {
+    html += '<div class="search-select-empty">无匹配结果</div>';
+  }
+  // 输入了内容且无完全匹配时,提供"创建机构"入口
+  if (raw && !exactMatch) {
+    html += `<div class="search-select-item agency-create-item" onclick="createCustomAgency(\`${raw}\`)">＋ 创建机构「${escHtml(raw)}」<span class="agency-create-hint">仅本地保存</span></div>`;
+  }
+  dd.innerHTML = html;
+  dd.classList.add('open');
+}
+function createCustomAgency(name) {
+  name = String(name || '').trim();
+  if (!name) { showToast('机构名称不能为空'); return; }
+  const all = getAllAgencies();
+  if (!all.some(a => a.toLowerCase() === name.toLowerCase())) {
+    CUSTOM_AGENCIES.unshift(name);
+    try { localStorage.setItem('customAgencies', JSON.stringify(CUSTOM_AGENCIES)); } catch (e) {}
+    showToast(`已创建并保存自定义机构「${name}」(仅本浏览器)`);
+  }
+  selectAgency(name);
+}
+function selectAgency(name) {
+  userSettings.agencyName = name;
+  document.getElementById('agencySearchInput').value = name;
+  document.getElementById('agencyDropdown').classList.remove('open');
+  document.getElementById('agencyBadge').textContent = name;
+  updateWelcome();
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.querySelector('.search-select-wrap');
+  if (wrap && !wrap.contains(e.target)) document.getElementById('agencyDropdown').classList.remove('open');
+});
+
+// ===== 渠道条自定义浮标(委托,兼容动态渲染的卡片) =====
+(function initChannelTooltip(){
+  let tip = document.getElementById('chTip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'chTip';
+    document.body.appendChild(tip);
+  }
+  const place = (e) => {
+    tip.style.left = e.clientX + 'px';
+    tip.style.top = (e.clientY - 10) + 'px';
+  };
+  document.addEventListener('mouseover', function(e){
+    const seg = e.target.closest && e.target.closest('.pc-ch-seg[data-tip]');
+    if (!seg) return;
+    tip.textContent = seg.getAttribute('data-tip') || '';
+    tip.classList.add('show');
+    place(e);
+  });
+  document.addEventListener('mousemove', function(e){
+    if (!tip.classList.contains('show')) return;
+    if (e.target.closest && e.target.closest('.pc-ch-seg[data-tip]')) place(e);
+  });
+  document.addEventListener('mouseout', function(e){
+    const seg = e.target.closest && e.target.closest('.pc-ch-seg[data-tip]');
+    if (seg) tip.classList.remove('show');
+  });
+})();
+
+// ===== 圈品池商品图点击弹出大图(委托,兼容动态渲染) =====
+document.addEventListener('click', function(e){
+  const img = e.target.closest && e.target.closest('.cart-card-img');
+  if (!img) return;
+  const src = img.getAttribute('src');
+  if (src) openLightbox(src);
+});
+
+// ===== Settings =====
+function loadSettings() {
+  if (userSettings.agencyName) { document.getElementById('agencySearchInput').value = userSettings.agencyName; document.getElementById('agencyBadge').textContent = userSettings.agencyName; }
+  if (userSettings.creatorName) document.getElementById('setCreatorName').value = userSettings.creatorName;
+  if (userSettings.creatorHandle) document.getElementById('setCreatorHandle').value = userSettings.creatorHandle;
+  if (userSettings.link) document.getElementById('setLink').value = userSettings.link;
+  if (userSettings.receiverName) document.getElementById('setReceiverName').value = userSettings.receiverName;
+  if (userSettings.receiverPhone) document.getElementById('setReceiverPhone').value = userSettings.receiverPhone;
+  if (userSettings.address) document.getElementById('setAddress').value = userSettings.address;
+}
+
+function saveSettings() {
+  const address = document.getElementById('setAddress').value.trim();
+  const parsed = parseAddress(address);
+  userSettings = {
+    agencyName: userSettings.agencyName || '',
+    creatorName: document.getElementById('setCreatorName').value.trim(),
+    creatorHandle: document.getElementById('setCreatorHandle').value.trim(),
+    link: document.getElementById('setLink').value.trim(),
+    receiverName: document.getElementById('setReceiverName').value.trim(),
+    receiverPhone: document.getElementById('setReceiverPhone').value.trim(),
+    address, city: parsed.city, province: parsed.province
+  };
+  localStorage.setItem('agencySettings', JSON.stringify(userSettings));
+  document.getElementById('agencyBadge').textContent = userSettings.agencyName || '未选择机构';
+  updateWelcome();
+  showToast(`已保存 — 解析地址: ${parsed.province} / ${parsed.city}`);
+}
+
+function parseAddress(addr) {
+  let province = '', city = '';
+  if (!addr) return { province, city };
+  const municipalities = ['北京','上海','天津','重庆'];
+  for (const m of municipalities) { if (addr.includes(m)) { province = m; city = m; return { province, city }; } }
+  const provMatch = addr.match(/(.{2,8}?(?:省|自治区))/);
+  if (provMatch) province = provMatch[1];
+  const cityMatch = addr.match(/(?:省|自治区)(.{2,6}?(?:市|州|盟|地区))/);
+  if (cityMatch) city = cityMatch[1];
+  else { const d = addr.match(/(.{2,6}?市)/); if (d) city = d[1]; }
+  return { province, city };
+}
+
+// ===== Export =====
+function exportPID() {
+  if (selectedPIDs.size === 0) { showToast('请至少选择一个商品'); return; }
+  const pids = [...selectedPIDs];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([['PID_product id'], ...pids.map(p => [p])]);
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let r = range.s.r; r <= range.e.r; r++) { const c = ws[XLSX.utils.encode_cell({r,c:0})]; if(c) c.t='s'; }
+  XLSX.utils.book_append_sheet(wb, ws, 'PID列表');
+  XLSX.writeFile(wb, `PID列表_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast(`已导出 ${pids.length} 个 PID`);
+}
+
+function exportFull() {
+  if (selectedPIDs.size === 0) { showToast('请至少选择一个商品'); return; }
+  if (!userSettings.agencyName) { showToast('请先在机构设置中选择机构名称'); return; }
+
+  const selectedItems = cart.filter(i => selectedPIDs.has(i.pid));
+  const grouped = {};
+  selectedItems.forEach(i => { if (!grouped[i.pid]) grouped[i.pid] = []; grouped[i.pid].push(i); });
+
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}`;
+
+  const headers = ['【auto】需求创建日期','【auto】需求编号','【机构必填】机构名称','机构提报人','【auto】申样状态','【机构选填】协作同事自主+','链接','达人链接主页','【机构必填】达人名称','【机构必填】达人handle','【机构必填】寄样类型','【机构必填】PID_product id','【机构必填】颜色','【机构必填】尺码','【机构必填】申请样衣件数','【机构必填】收件人国家','【机构必填】收件人_名称','【机构必填】收件人联系电话','【机构必填】详细地址','【机构必填】收件人_市','【机构必填】收件人_洲'];
+
+  const wsData = [headers];
+  Object.entries(grouped).forEach(([pid, items]) => {
+    const colorGroups = {};
+    items.forEach(i => { if (!colorGroups[i.color]) colorGroups[i.color] = []; colorGroups[i.color].push(i); });
+    const mValue = Object.entries(colorGroups).map(([color, skus]) => {
+      return `${color}（${skus.map(s => `${s.qty}件${s.size}`).join(' ')}）`;
+    }).join('、');
+    const totalQty = items.reduce((s,i) => s + i.qty, 0);
+    wsData.push([dateStr,'',userSettings.agencyName,'','','',userSettings.link||'','',userSettings.creatorName||'',userSettings.creatorHandle||'','国内机构寄样',pid,mValue,'请看前面的信息',totalQty,'CN 中国',userSettings.receiverName||'',userSettings.receiverPhone||'',userSettings.address||'',userSettings.city||'',userSettings.province||'']);
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  // Force PID column as string (19-digit)
+  for (let r = 1; r < wsData.length; r++) { const ref = XLSX.utils.encode_cell({r,c:11}); if(ws[ref]) ws[ref].t='s'; }
+  ws['!cols'] = [{wch:14},{wch:10},{wch:22},{wch:10},{wch:10},{wch:12},{wch:30},{wch:12},{wch:15},{wch:18},{wch:14},{wch:22},{wch:40},{wch:16},{wch:10},{wch:10},{wch:12},{wch:16},{wch:40},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws, '申样记录');
+  XLSX.writeFile(wb, `批量申样记录_${userSettings.agencyName}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast(`已导出 ${wsData.length - 1} 条申样记录`);
+}
+
+// ===== Utils =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2500);
+}
+
+// ===== Boot =====
+checkSession();
+</script>
+</body>
+</html>
